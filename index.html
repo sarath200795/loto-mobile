@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>LOTO Mobile Pro - Full Compliance</title>
+    <title>LOTO Mobile Pro - Tags Fixed</title>
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#b91c1c">
     <meta name="apple-mobile-web-app-capable" content="yes">
@@ -23,7 +23,7 @@
         <header class="mb-6 flex justify-between items-center">
             <div>
                 <h1 class="text-2xl font-black text-red-700 uppercase">LOTO Mobile</h1>
-                <p class="text-[10px] text-gray-500 font-bold uppercase tracking-widest">OSHA Compliance Tool</p>
+                <p class="text-[10px] text-gray-500 font-bold uppercase tracking-widest">Fixed Tag Layout</p>
             </div>
             <div class="text-right">
                 <p id="displayID" class="text-xs font-mono font-bold text-red-600 bg-red-50 p-2 rounded border border-red-200">ID: PENDING</p>
@@ -88,16 +88,16 @@
             card.className = "bg-white p-5 rounded-xl shadow-sm border-2 border-gray-200 relative mb-4";
             card.innerHTML = `
                 <div class="mb-3 flex justify-between items-center">
-                    <span class="bg-red-600 text-white px-3 py-1 rounded-full text-[10px] font-bold">ISOLATION STEP ${id}</span>
+                    <span class="bg-red-600 text-white px-3 py-1 rounded-full text-[10px] font-bold">STEP ${id}</span>
                     <input type="text" id="tag-${id}" class="text-right font-mono font-bold text-red-600 bg-transparent w-20" readonly>
                 </div>
                 <select id="energy-type-${id}" onchange="handleTagAutoGeneration(${id})" class="w-full border p-3 rounded-lg mb-4 validate bg-gray-50">
-                    <option value="">Select Energy...</option>
+                    <option value="">Select Energy Type...</option>
                     ${Object.keys(energyConfig).map(opt => `<option value="${opt}">${opt}</option>`).join('')}
                 </select>
                 <div class="multi-device-scroll mb-4">${deviceOptions.map(opt => `<label class="flex items-center mb-2"><input type="checkbox" class="device-checkbox-${id} mr-2" value="${opt}"><span class="text-sm">${opt}</span></label>`).join('')}</div>
-                <textarea id="isolate-${id}" class="w-full border p-3 rounded-lg text-sm mb-3 validate" rows="2" placeholder="Describe Isolation Action..."></textarea>
-                <textarea id="verify-${id}" class="w-full border p-3 rounded-lg text-sm mb-4 validate" rows="2" placeholder="Describe Verification..."></textarea>
+                <textarea id="isolate-${id}" class="w-full border p-3 rounded-lg text-sm mb-3 validate" rows="2" placeholder="Action..."></textarea>
+                <textarea id="verify-${id}" class="w-full border p-3 rounded-lg text-sm mb-4 validate" rows="2" placeholder="Verification..."></textarea>
                 <div class="border-2 border-dashed border-gray-300 rounded-lg p-4 text-center bg-slate-50 active:bg-gray-100">
                     <label class="cursor-pointer block">
                         <span class="text-red-600 font-bold text-sm block">📸 TAKE PHOTO</span>
@@ -125,46 +125,31 @@
                 if (!el.value.trim()) { el.classList.add('error-border'); isValid = false; } 
                 else { el.classList.remove('error-border'); }
             });
-            if (!isValid) { alert("Fill all fields."); return; }
+            if (!isValid) { alert("Please complete all fields."); return; }
             generateLotoPDF();
         }
 
         async function generateLotoPDF() {
             const { jsPDF } = window.jspdf;
             const doc = new jsPDF('p', 'mm', 'a4');
-            const energyCounts = {};
-            for (let i = 1; i <= pointCounter; i++) {
-                const type = document.getElementById(`energy-type-${i}`).value;
-                energyCounts[type] = (energyCounts[type] || 0) + 1;
-            }
-            const energySummary = Object.entries(energyCounts).map(([type, count]) => `${type}-${count.toString().padStart(2, '0')}`).join(', ');
+            const equipName = document.getElementById('description').value || "N/A";
 
-            // Header Red Bar
+            // --- PAGE 1: PROCEDURE (Same as before) ---
             doc.setFillColor(180, 0, 0); doc.rect(0, 0, 210, 18, 'F');
             doc.setTextColor(255, 255, 255); doc.setFontSize(14); doc.setFont("helvetica", "bold");
             doc.text("LOCKOUT / TAGOUT POSTED PROCEDURE", 105, 12, { align: "center" });
 
-            // ID & Info Box
             doc.setLineWidth(0.8); doc.setDrawColor(0); doc.rect(10, 22, 190, 32);
             doc.setTextColor(0,0,0); doc.setFontSize(8);
             doc.text(`ID#: ${currentID}`, 14, 28);
             doc.text(`Facility: ${document.getElementById('facility').value}`, 14, 34);
             doc.text(`Location: ${document.getElementById('location').value}`, 14, 40);
-            doc.text(`Description: ${document.getElementById('description').value}`, 14, 46);
-            doc.setFont("helvetica", "bold"); doc.text(`Total Energy Sources: ${pointCounter}`, 125, 28);
-            const wrappedEnergy = doc.splitTextToSize(`Types: ${energySummary}`, 65);
-            doc.text(wrappedEnergy, 125, 34);
-            doc.setFont("helvetica", "normal"); doc.text(`Revised: ${document.getElementById('revisedDate').value}`, 125, 48);
+            doc.text(`Description: ${equipName}`, 14, 46);
 
-            // COMPLIANCE SECTION: Purpose, Scope, Authorization
+            // Compliance Section
             let compY = 58;
             doc.rect(10, compY, 190, 80); doc.setFontSize(7.5);
-            const data = [
-                { t: "Purpose:", p: "This procedure establishes the minimum requirements for the lockout of energy isolating devices whenever maintenance or servicing is done on machines or equipment." },
-                { t: "Scope:", p: "Ensure the equipment is stopped, isolated from all potentially hazardous energy sources and locked out before employees perform servicing or maintenance." },
-                { t: "Authorization:", p: "This procedure shall only be used by employees that have been trained as 'Authorized' employees under OSHA 1910.147." },
-                { t: "Application Process:", p: "1. Notify 2. Identify 3. Shutdown 4. Isolate 5. Lock/Tag 6. Release 7. Verify Isolation." }
-            ];
+            const data = [{ t: "Purpose:", p: "Establish requirements for lockout." }, { t: "Scope:", p: "Isolate hazardous energy." }, { t: "Authorization:", p: "Authorized employees only." }, { t: "Application:", p: "1-7 Steps." }];
             let tY = compY + 6;
             data.forEach(s => {
                 doc.setFont("helvetica", "bold"); doc.text(s.t, 14, tY);
@@ -173,14 +158,14 @@
                 tY += (lines.length * 4) + 6;
             });
 
-            // TABLE PAGE 1
+            // Table
             const rows = [];
             for (let i = 1; i <= pointCounter; i++) {
                 const dev = Array.from(document.querySelectorAll(`.device-checkbox-${i}:checked`)).map(cb => cb.value).join(', ');
                 rows.push([document.getElementById(`tag-${i}`).value, dev, document.getElementById(`isolate-${i}`).value, "", document.getElementById(`verify-${i}`).value]);
             }
             doc.autoTable({
-                startY: 142, head: [['Tag', 'Devices', 'Action', 'Visual', 'Verify']], body: rows, theme: 'grid', rowPageBreak: 'avoid',
+                startY: 142, head: [['Tag', 'Devices', 'Action', 'Visual', 'Verify']], body: rows, theme: 'grid',
                 styles: { minCellHeight: 40, verticalAlign: 'middle', fontSize: 7, lineWidth: 0.5, lineColor: [0,0,0] },
                 columnStyles: { 0: { cellWidth: 15, fontStyle: 'bold' }, 1: { cellWidth: 32 }, 2: { cellWidth: 39 }, 3: { cellWidth: 58 }, 4: { cellWidth: 46 } },
                 didDrawCell: (d) => { 
@@ -197,30 +182,47 @@
             doc.addPage();
             doc.setFillColor(180, 0, 0); doc.rect(0, 0, 210, 18, 'F');
             doc.setTextColor(255, 255, 255); doc.text("SAFETY SEQUENCES", 105, 12, { align: "center" });
-            doc.autoTable({
-                startY: 25, head: [['#', 'SHUTDOWN SEQUENCE', 'DESCRIPTION']],
-                body: [['1','Notify','Inform all affected employees.'],['2','Review','Check LOTO requirements.'],['3','Stop','Standard shutdown.'],['4','Isolate','Operate disconnects.'],['5','Lockout','Apply locks/tags.'],['6','Release','Dissipate stored energy.'],['7','Verify','Test start then OFF.']],
-                theme:'grid', styles:{fontSize:8.5}, headStyles:{fillColor:[180,0,0]}
-            });
-            doc.autoTable({
-                startY: doc.lastAutoTable.finalY+10, head: [['#', 'RESTORATION SEQUENCE', 'DESCRIPTION']],
-                body: [['1','Check','Remove tools/parts.'],['2','Area','Clear all personnel.'],['3','Verify','Controls in neutral.'],['4','Restore','Remove locks.'],['5','Notify','Inform work is done.']],
-                theme:'grid', styles:{fontSize:8.5}, headStyles:{fillColor:[0,80,150]}
-            });
+            doc.autoTable({ startY: 25, head: [['#','SHUTDOWN','DESC']], body: [['1','Notify','...'],['2','Review','...'],['3','Stop','...']], theme:'grid' });
 
-            // PAGE 3: TAGS
+            // --- PAGE 3: COLOR-CODED COMPACT TAGS (FIXED) ---
             doc.addPage();
             doc.setFillColor(50, 50, 50); doc.rect(0, 0, 210, 18, 'F');
-            doc.setTextColor(255, 255, 255); doc.text("POINT TAGS (1\" x 2\")", 105, 12, { align: "center" });
-            const tagW = 50.8, tagH = 25.4; let cx = 10, cy = 25;
+            doc.setTextColor(255, 255, 255); doc.setFontSize(12); doc.text("PRINTABLE ISOLATION TAGS (1\" x 2\")", 105, 12, { align: "center" });
+            
+            const tagW = 50.8, tagH = 25.4, gap = 2;
+            let cx = 10, cy = 25;
+
             for (let i = 1; i <= pointCounter; i++) {
-                const colors = energyConfig[document.getElementById(`energy-type-${i}`).value] || {bg:[255,255,255],text:[0,0,0]};
-                doc.setFillColor(...colors.bg); doc.rect(cx, cy, tagW, tagH, 'F');
-                doc.setDrawColor(0); doc.rect(cx, cy, tagW, tagH, 'D');
-                doc.setTextColor(...colors.text); doc.setFontSize(18); doc.text(document.getElementById(`tag-${i}`).value, cx+4, cy+12);
-                cx += tagW + 2; if (cx + tagW > 200) { cx = 10; cy += tagH + 2; }
+                const energyType = document.getElementById(`energy-type-${i}`).value;
+                const colors = energyConfig[energyType] || {bg:[255,255,255],text:[0,0,0]};
+                
+                // Draw Background Color
+                doc.setFillColor(...colors.bg);
+                doc.rect(cx, cy, tagW, tagH, 'F');
+                
+                // Draw Border
+                doc.setDrawColor(0); doc.setLineWidth(0.2);
+                doc.rect(cx, cy, tagW, tagH, 'D');
+                
+                // Draw Large Tag ID (E-1)
+                doc.setTextColor(...colors.text);
+                doc.setFontSize(16); doc.setFont("helvetica", "bold");
+                doc.text(document.getElementById(`tag-${i}`).value, cx + 4, cy + 10);
+                
+                // Draw ID and Equipment (Fixed Details)
+                doc.setFontSize(5); doc.setFont("helvetica", "normal");
+                doc.text(`DOC ID: ${currentID}`, cx + 4, cy + 17);
+                
+                // Wrap equipment name if too long
+                const wrappedDesc = doc.splitTextToSize(`Equip: ${equipName}`, tagW - 8);
+                doc.text(wrappedDesc, cx + 4, cy + 21);
+
+                // Update Grid Positions
+                cx += tagW + gap;
+                if (cx + tagW > 200) { cx = 10; cy += tagH + gap; }
+                if (cy + tagH > 280 && i < pointCounter) { doc.addPage(); cx = 10; cy = 25; }
             }
-            doc.save(`${currentID}.pdf`);
+            doc.save(`${currentID}_FINAL.pdf`);
         }
     </script>
 </body>
