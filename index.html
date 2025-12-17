@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>LOTO Mobile Pro - Tags Fixed</title>
+    <title>LOTO Mobile Pro - Layout Fixed</title>
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#b91c1c">
     <meta name="apple-mobile-web-app-capable" content="yes">
@@ -11,8 +11,9 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
     <style>
-        body { -webkit-tap-highlight-color: transparent; padding-bottom: 100px; font-family: sans-serif; }
+        body { -webkit-tap-highlight-color: transparent; padding-bottom: 110px; font-family: sans-serif; }
         input, select, textarea { font-size: 16px !important; }
+        .label-style { font-size: 10px; font-weight: 800; color: #64748b; text-transform: uppercase; margin-bottom: 4px; display: block; }
         .multi-device-scroll { max-height: 150px; overflow-y: auto; border: 1px solid #ddd; padding: 10px; border-radius: 8px; background: white; }
         .sticky-bottom { position: fixed; bottom: 0; left: 0; right: 0; background: white; border-top: 2px solid #eee; padding: 15px; z-index: 100; display: flex; gap: 10px; }
         .validate.error-border { border: 2px solid red !important; }
@@ -20,28 +21,40 @@
 </head>
 <body class="bg-slate-50">
     <div class="p-4 max-w-lg mx-auto">
-        <header class="mb-6 flex justify-between items-center">
+        <header class="mb-6 flex justify-between items-center border-b pb-4">
             <div>
-                <h1 class="text-2xl font-black text-red-700 uppercase">LOTO Mobile</h1>
-                <p class="text-[10px] text-gray-500 font-bold uppercase tracking-widest">Fixed Tag Layout</p>
+                <h1 class="text-2xl font-black text-red-700 uppercase leading-tight">LOTO Mobile</h1>
+                <p class="text-[10px] text-slate-500 font-bold uppercase tracking-widest">Safety Compliance System</p>
             </div>
             <div class="text-right">
                 <p id="displayID" class="text-xs font-mono font-bold text-red-600 bg-red-50 p-2 rounded border border-red-200">ID: PENDING</p>
             </div>
         </header>
 
-        <div class="space-y-3 bg-white p-4 rounded-xl shadow-sm border border-gray-200 mb-6">
-            <input type="text" id="facility" oninput="updateID()" class="w-full border p-3 rounded-lg validate" placeholder="Facility (e.g. HYD8)">
-            <input type="text" id="location" oninput="updateID()" class="w-full border p-3 rounded-lg validate" placeholder="Location">
-            <input type="text" id="description" oninput="updateID()" class="w-full border p-3 rounded-lg validate" placeholder="Equipment Name">
-            <input type="date" id="revisedDate" class="w-full border p-3 rounded-lg validate">
+        <div class="space-y-4 bg-white p-5 rounded-xl shadow-sm border border-slate-200 mb-6">
+            <div>
+                <label class="label-style">Facility Name</label>
+                <input type="text" id="facility" oninput="updateID()" class="w-full border p-3 rounded-lg validate" placeholder="e.g. HYD8">
+            </div>
+            <div>
+                <label class="label-style">Specific Location</label>
+                <input type="text" id="location" oninput="updateID()" class="w-full border p-3 rounded-lg validate" placeholder="e.g. UPS Room 1">
+            </div>
+            <div>
+                <label class="label-style">Equipment Description</label>
+                <input type="text" id="description" oninput="updateID()" class="w-full border p-3 rounded-lg validate" placeholder="e.g. 80kVA UPS Unit">
+            </div>
+            <div>
+                <label class="label-style">Revision Date</label>
+                <input type="date" id="revisedDate" class="w-full border p-3 rounded-lg validate">
+            </div>
         </div>
 
         <div id="points-list" class="space-y-6"></div>
     </div>
 
     <div class="sticky-bottom shadow-2xl">
-        <button onclick="addNewPoint()" class="flex-1 bg-slate-800 text-white font-bold py-4 rounded-xl active:scale-95 transition">+ ADD STEP</button>
+        <button onclick="addNewPoint()" class="flex-1 bg-slate-800 text-white font-bold py-4 rounded-xl active:scale-95 transition">+ ADD ISOLATION</button>
         <button onclick="validateAndGenerate()" class="flex-1 bg-red-600 text-white font-bold py-4 rounded-xl shadow-lg active:scale-95 transition">GENERATE PDF</button>
     </div>
 
@@ -51,179 +64,189 @@
         let currentID = "";
 
         const energyConfig = {
-            "Electrical":     { code: "E",  bg: [255, 0, 0],    text: [255, 255, 255] },
-            "Mechanical":     { code: "M",  bg: [0, 0, 255],    text: [255, 255, 255] },
-            "Compressed Air": { code: "CA", bg: [0, 255, 255],  text: [0, 0, 0] },
-            "Radiation":      { code: "R",  bg: [255, 255, 0],  text: [0, 0, 0] },
-            "Chemical":       { code: "C",  bg: [0, 128, 0],    text: [255, 255, 255] },
-            "Hydraulic":      { code: "H",  bg: [255, 165, 0],  text: [0, 0, 0] },
-            "Pneumatic":      { code: "P",  bg: [128, 0, 128],  text: [255, 255, 255] },
-            "Steam":          { code: "S",  bg: [128, 128, 128],text: [255, 255, 255] },
-            "Water":          { code: "W",  bg: [0, 191, 255],  text: [0, 0, 0] }
+            "Electrical":     { code: "E",  bg: [220, 38, 38],   text: [255, 255, 255] },
+            "Mechanical":     { code: "M",  bg: [37, 99, 235],   text: [255, 255, 255] },
+            "Compressed Air": { code: "CA", bg: [6, 182, 212],   text: [0, 0, 0] },
+            "Radiation":      { code: "R",  bg: [234, 179, 8],   text: [0, 0, 0] },
+            "Chemical":       { code: "C",  bg: [22, 163, 74],   text: [255, 255, 255] },
+            "Hydraulic":      { code: "H",  bg: [249, 115, 22],  text: [255, 255, 255] },
+            "Pneumatic":      { code: "P",  bg: [147, 51, 234],  text: [255, 255, 255] },
+            "Steam":          { code: "S",  bg: [71, 85, 105],   text: [255, 255, 255] },
+            "Water":          { code: "W",  bg: [14, 165, 233],  text: [0, 0, 0] }
         };
 
-        const deviceOptions = ["Circuit Breaker Lockout", "Plug Lockout", "Wall Switch Lockout", "Ball Valve Lockout", "Gate Valve Lockout", "Cable Lockout", "Pneumatic Lockout"];
+        const deviceOptions = ["Circuit Breaker Lockout", "Plug Lockout", "Gate Valve Lockout", "Ball Valve Lockout", "Butterfly Valve Lockout", "Cable Lockout", "Pneumatic Lockout"];
 
         function updateID() {
             const fac = document.getElementById('facility').value.trim().toUpperCase() || "FAC";
             const loc = document.getElementById('location').value.trim().toUpperCase() || "LOC";
             const desc = document.getElementById('description').value.trim().toUpperCase() || "DESC";
-            currentID = `${fac.replace(/\s+/g, '')}-${loc.replace(/\s+/g, '')}-${desc.replace(/\s+/g, '')}`;
+            currentID = `${fac.replace(/\s+/g, '')}-${loc.replace(/\s+/g, '')}-${desc.substring(0,8).replace(/\s+/g, '')}`;
             document.getElementById('displayID').innerText = `ID: ${currentID}`;
         }
 
         function handleTagAutoGeneration(id) {
-            const selectedEnergy = document.getElementById(`energy-type-${id}`).value;
-            if (!selectedEnergy) return;
-            const prefix = energyConfig[selectedEnergy].code;
+            const val = document.getElementById(`energy-type-${id}`).value;
+            if (!val) return;
             let count = 0;
-            document.querySelectorAll('[id^="energy-type-"]').forEach((el) => { if (el.value === selectedEnergy) count++; });
-            document.getElementById(`tag-${id}`).value = `${prefix}-${count}`;
+            document.querySelectorAll('[id^="energy-type-"]').forEach(el => { if (el.value === val) count++; });
+            document.getElementById(`tag-${id}`).value = `${energyConfig[val].code}-${count}`;
         }
 
         function addNewPoint() {
             pointCounter++;
             const id = pointCounter;
             const card = document.createElement('div');
-            card.className = "bg-white p-5 rounded-xl shadow-sm border-2 border-gray-200 relative mb-4";
+            card.className = "bg-white p-5 rounded-xl shadow-md border-2 border-slate-200 relative mb-4";
             card.innerHTML = `
-                <div class="mb-3 flex justify-between items-center">
-                    <span class="bg-red-600 text-white px-3 py-1 rounded-full text-[10px] font-bold">STEP ${id}</span>
-                    <input type="text" id="tag-${id}" class="text-right font-mono font-bold text-red-600 bg-transparent w-20" readonly>
+                <div class="mb-4 flex justify-between items-center border-b pb-2">
+                    <span class="text-red-700 font-black text-sm uppercase">Isolation Point #${id}</span>
+                    <input type="text" id="tag-${id}" class="text-right font-mono font-bold text-red-600 bg-transparent" readonly>
                 </div>
-                <select id="energy-type-${id}" onchange="handleTagAutoGeneration(${id})" class="w-full border p-3 rounded-lg mb-4 validate bg-gray-50">
-                    <option value="">Select Energy Type...</option>
-                    ${Object.keys(energyConfig).map(opt => `<option value="${opt}">${opt}</option>`).join('')}
+                
+                <label class="label-style">Energy Source</label>
+                <select id="energy-type-${id}" onchange="handleTagAutoGeneration(${id})" class="w-full border p-3 rounded-lg mb-4 validate bg-slate-50">
+                    <option value="">-- Choose Type --</option>
+                    ${Object.keys(energyConfig).map(k => `<option value="${k}">${k}</option>`).join('')}
                 </select>
-                <div class="multi-device-scroll mb-4">${deviceOptions.map(opt => `<label class="flex items-center mb-2"><input type="checkbox" class="device-checkbox-${id} mr-2" value="${opt}"><span class="text-sm">${opt}</span></label>`).join('')}</div>
-                <textarea id="isolate-${id}" class="w-full border p-3 rounded-lg text-sm mb-3 validate" rows="2" placeholder="Action..."></textarea>
-                <textarea id="verify-${id}" class="w-full border p-3 rounded-lg text-sm mb-4 validate" rows="2" placeholder="Verification..."></textarea>
-                <div class="border-2 border-dashed border-gray-300 rounded-lg p-4 text-center bg-slate-50 active:bg-gray-100">
-                    <label class="cursor-pointer block">
-                        <span class="text-red-600 font-bold text-sm block">📸 TAKE PHOTO</span>
+
+                <label class="label-style">Hardware Devices Required</label>
+                <div class="multi-device-scroll mb-4">${deviceOptions.map(o => `<label class="flex items-center mb-2"><input type="checkbox" class="device-checkbox-${id} mr-2" value="${o}"><span class="text-sm">${o}</span></label>`).join('')}</div>
+
+                <label class="label-style">Isolation Step (Method)</label>
+                <textarea id="isolate-${id}" class="w-full border p-3 rounded-lg text-sm mb-4 validate" rows="2" placeholder="e.g. Turn handle 90 degrees..."></textarea>
+                
+                <label class="label-style">Verification Step</label>
+                <textarea id="verify-${id}" class="w-full border p-3 rounded-lg text-sm mb-4 validate" rows="2" placeholder="e.g. Check gauge shows 0 PSI..."></textarea>
+                
+                <label class="label-style">Photo Documentation</label>
+                <div class="border-2 border-dashed border-slate-300 rounded-lg p-4 text-center bg-slate-50">
+                    <label class="cursor-pointer">
+                        <span class="text-red-600 font-bold text-sm">📸 CAPTURE IMAGE</span>
                         <input type="file" id="file-${id}" accept="image/*" capture="environment" onchange="previewFile(this, ${id})" class="hidden">
                     </label>
-                    <div id="preview-box-${id}" class="mt-2 hidden"><img id="img-target-${id}" class="w-full h-48 object-cover rounded-lg shadow-inner"></div>
-                </div>
-            `;
+                    <div id="preview-box-${id}" class="mt-2 hidden"><img id="img-target-${id}" class="w-full h-48 object-cover rounded-lg"></div>
+                </div>`;
             document.getElementById('points-list').appendChild(card);
             window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
         }
 
         function previewFile(input, id) {
             const file = input.files[0];
-            if (file) { 
-                const reader = new FileReader(); 
-                reader.onload = (e) => { imageDataStore[id] = e.target.result; document.getElementById(`preview-box-${id}`).classList.remove('hidden'); document.getElementById(`img-target-${id}`).src = e.target.result; }; 
-                reader.readAsDataURL(file); 
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    imageDataStore[id] = e.target.result;
+                    document.getElementById(`preview-box-${id}`).classList.remove('hidden');
+                    document.getElementById(`img-target-${id}`).src = e.target.result;
+                };
+                reader.readAsDataURL(file);
             }
         }
 
         function validateAndGenerate() {
-            let isValid = true;
-            document.querySelectorAll('.validate').forEach(el => { 
-                if (!el.value.trim()) { el.classList.add('error-border'); isValid = false; } 
+            let ok = true;
+            document.querySelectorAll('.validate').forEach(el => {
+                if (!el.value.trim()) { el.classList.add('error-border'); ok = false; }
                 else { el.classList.remove('error-border'); }
             });
-            if (!isValid) { alert("Please complete all fields."); return; }
-            generateLotoPDF();
+            if (!ok) return alert("Please fill all highlighted fields.");
+            generatePDF();
         }
 
-        async function generateLotoPDF() {
+        async function generatePDF() {
             const { jsPDF } = window.jspdf;
             const doc = new jsPDF('p', 'mm', 'a4');
-            const equipName = document.getElementById('description').value || "N/A";
+            const equip = document.getElementById('description').value;
 
-            // --- PAGE 1: PROCEDURE (Same as before) ---
+            // PAGE 1: HEADER
             doc.setFillColor(180, 0, 0); doc.rect(0, 0, 210, 18, 'F');
             doc.setTextColor(255, 255, 255); doc.setFontSize(14); doc.setFont("helvetica", "bold");
             doc.text("LOCKOUT / TAGOUT POSTED PROCEDURE", 105, 12, { align: "center" });
 
-            doc.setLineWidth(0.8); doc.setDrawColor(0); doc.rect(10, 22, 190, 32);
-            doc.setTextColor(0,0,0); doc.setFontSize(8);
+            doc.setDrawColor(0); doc.setLineWidth(0.8); doc.rect(10, 22, 190, 30);
+            doc.setTextColor(0); doc.setFontSize(8);
             doc.text(`ID#: ${currentID}`, 14, 28);
             doc.text(`Facility: ${document.getElementById('facility').value}`, 14, 34);
             doc.text(`Location: ${document.getElementById('location').value}`, 14, 40);
-            doc.text(`Description: ${equipName}`, 14, 46);
+            doc.text(`Equipment: ${equip}`, 14, 46);
+            doc.setFont("helvetica", "bold"); doc.text(`Total Energy Sources: ${pointCounter}`, 140, 28);
+            doc.text(`Revised Date: ${document.getElementById('revisedDate').value}`, 140, 34);
 
-            // Compliance Section
-            let compY = 58;
-            doc.rect(10, compY, 190, 80); doc.setFontSize(7.5);
-            const data = [{ t: "Purpose:", p: "Establish requirements for lockout." }, { t: "Scope:", p: "Isolate hazardous energy." }, { t: "Authorization:", p: "Authorized employees only." }, { t: "Application:", p: "1-7 Steps." }];
-            let tY = compY + 6;
-            data.forEach(s => {
-                doc.setFont("helvetica", "bold"); doc.text(s.t, 14, tY);
-                doc.setFont("helvetica", "normal");
-                const lines = doc.splitTextToSize(s.p, 180); doc.text(lines, 14, tY + 4);
-                tY += (lines.length * 4) + 6;
+            // PAGE 1: COMPLIANCE TEXT (STRETCHED BOX)
+            let compY = 56;
+            doc.setFont("helvetica", "bold"); doc.rect(10, compY, 190, 80);
+            const comp = [
+                {t: "Purpose:", p: "This procedure establishes minimum requirements for the lockout of energy isolating devices during maintenance."},
+                {t: "Scope:", p: "Ensure machine is isolated from potentially hazardous energy before servicing where unexpected startup could cause injury."},
+                {t: "Authorization:", p: "Only employees trained as 'Authorized' under OSHA 1910.147 may use this procedure."},
+                {t: "Process:", p: "1. Notify 2. Identify 3. Shutdown 4. Isolate 5. Lock/Tag 6. Release Stored Energy 7. Verify."}
+            ];
+            let ty = compY + 6;
+            comp.forEach(s => {
+                doc.setFontSize(8); doc.setFont("helvetica", "bold"); doc.text(s.t, 14, ty);
+                doc.setFont("helvetica", "normal"); doc.setFontSize(7.5);
+                const lines = doc.splitTextToSize(s.p, 180); doc.text(lines, 14, ty + 4);
+                ty += (lines.length * 4) + 6;
             });
 
-            // Table
-            const rows = [];
-            for (let i = 1; i <= pointCounter; i++) {
-                const dev = Array.from(document.querySelectorAll(`.device-checkbox-${i}:checked`)).map(cb => cb.value).join(', ');
-                rows.push([document.getElementById(`tag-${i}`).value, dev, document.getElementById(`isolate-${i}`).value, "", document.getElementById(`verify-${i}`).value]);
+            // PAGE 1: TABLE (POSITIONED BELOW TEXT)
+            const body = [];
+            for(let i=1; i<=pointCounter; i++) {
+                const devs = Array.from(document.querySelectorAll(`.device-checkbox-${i}:checked`)).map(c => c.value).join(', ');
+                body.push([document.getElementById(`tag-${i}`).value, devs, document.getElementById(`isolate-${i}`).value, "", document.getElementById(`verify-${i}`).value]);
             }
             doc.autoTable({
-                startY: 142, head: [['Tag', 'Devices', 'Action', 'Visual', 'Verify']], body: rows, theme: 'grid',
-                styles: { minCellHeight: 40, verticalAlign: 'middle', fontSize: 7, lineWidth: 0.5, lineColor: [0,0,0] },
-                columnStyles: { 0: { cellWidth: 15, fontStyle: 'bold' }, 1: { cellWidth: 32 }, 2: { cellWidth: 39 }, 3: { cellWidth: 58 }, 4: { cellWidth: 46 } },
-                didDrawCell: (d) => { 
+                startY: 142, head: [['Tag', 'Devices', 'Method', 'Visual', 'Verify']], body: body, theme: 'grid',
+                styles: { fontSize: 7, minCellHeight: 38, verticalAlign: 'middle' },
+                columnStyles: { 0: {cellWidth: 15}, 3: {cellWidth: 55} },
+                didDrawCell: (d) => {
                     if (d.column.index === 0 && d.cell.section === 'body') {
-                        const type = document.getElementById(`energy-type-${d.row.index + 1}`).value;
-                        const colors = energyConfig[type];
-                        if (colors) { doc.setFillColor(...colors.bg); doc.rect(d.cell.x+0.5, d.cell.y+0.5, d.cell.width-1, d.cell.height-1, 'F'); doc.setTextColor(...colors.text); doc.text(d.cell.text, d.cell.x+d.cell.width/2, d.cell.y+d.cell.height/2, { align:'center', baseline:'middle' }); }
+                        const type = document.getElementById(`energy-type-${d.row.index+1}`).value;
+                        const c = energyConfig[type];
+                        if(c) { doc.setFillColor(...c.bg); doc.rect(d.cell.x+0.5, d.cell.y+0.5, d.cell.width-1, d.cell.height-1, 'F'); doc.setTextColor(...c.text); doc.text(d.cell.text, d.cell.x+d.cell.width/2, d.cell.y+d.cell.height/2, {align:'center', baseline:'middle'}); }
                     }
-                    if (d.column.index === 3 && d.cell.section === 'body' && imageDataStore[d.row.index + 1]) { doc.addImage(imageDataStore[d.row.index + 1], 'JPEG', d.cell.x+2, d.cell.y+2, 54, 36); } 
+                    if (d.column.index === 3 && d.cell.section === 'body' && imageDataStore[d.row.index+1]) {
+                        doc.addImage(imageDataStore[d.row.index+1], 'JPEG', d.cell.x+2, d.cell.y+2, 51, 34);
+                    }
                 }
             });
 
-            // PAGE 2: SEQUENCES
+            // PAGE 2: SAFETY TABLES
             doc.addPage();
             doc.setFillColor(180, 0, 0); doc.rect(0, 0, 210, 18, 'F');
-            doc.setTextColor(255, 255, 255); doc.text("SAFETY SEQUENCES", 105, 12, { align: "center" });
-            doc.autoTable({ startY: 25, head: [['#','SHUTDOWN','DESC']], body: [['1','Notify','...'],['2','Review','...'],['3','Stop','...']], theme:'grid' });
+            doc.setTextColor(255, 255, 255); doc.setFontSize(12); doc.text("SHUTDOWN & RESTORATION SEQUENCES", 105, 12, { align: "center" });
+            
+            doc.autoTable({
+                startY: 25, head: [['#', 'SHUTDOWN SEQUENCE', 'DESCRIPTION']],
+                body: [['1','Notify','Inform all affected associates.'],['2','Review','Identify energy types.'],['3','Stop','Standard stopping procedure.'],['4','Isolate','Operate disconnects/valves.'],['5','Lockout','Apply individual locks.'],['6','Stored','Release pressure/energy.'],['7','Test','Verify zero energy.']],
+                theme: 'grid', headStyles: {fillColor: [180,0,0]}
+            });
 
-            // --- PAGE 3: COLOR-CODED COMPACT TAGS (FIXED) ---
+            doc.autoTable({
+                startY: doc.lastAutoTable.finalY + 10, head: [['#', 'RESTORATION SEQUENCE', 'DESCRIPTION']],
+                body: [['1','Check','Remove tools and parts.'],['2','Area','Clear personnel from hazard.'],['3','Verify','Controls in neutral.'],['4','Restore','Remove locks and tags.'],['5','Notify','Inform work is complete.']],
+                theme: 'grid', headStyles: {fillColor: [0,80,150]}
+            });
+
+            // PAGE 3: COLORED TAGS
             doc.addPage();
             doc.setFillColor(50, 50, 50); doc.rect(0, 0, 210, 18, 'F');
-            doc.setTextColor(255, 255, 255); doc.setFontSize(12); doc.text("PRINTABLE ISOLATION TAGS (1\" x 2\")", 105, 12, { align: "center" });
-            
-            const tagW = 50.8, tagH = 25.4, gap = 2;
+            doc.setTextColor(255, 255, 255); doc.text("ISOLATION TAGS (1\" x 2\")", 105, 12, { align: "center" });
             let cx = 10, cy = 25;
-
-            for (let i = 1; i <= pointCounter; i++) {
-                const energyType = document.getElementById(`energy-type-${i}`).value;
-                const colors = energyConfig[energyType] || {bg:[255,255,255],text:[0,0,0]};
-                
-                // Draw Background Color
-                doc.setFillColor(...colors.bg);
-                doc.rect(cx, cy, tagW, tagH, 'F');
-                
-                // Draw Border
-                doc.setDrawColor(0); doc.setLineWidth(0.2);
-                doc.rect(cx, cy, tagW, tagH, 'D');
-                
-                // Draw Large Tag ID (E-1)
-                doc.setTextColor(...colors.text);
-                doc.setFontSize(16); doc.setFont("helvetica", "bold");
-                doc.text(document.getElementById(`tag-${i}`).value, cx + 4, cy + 10);
-                
-                // Draw ID and Equipment (Fixed Details)
-                doc.setFontSize(5); doc.setFont("helvetica", "normal");
-                doc.text(`DOC ID: ${currentID}`, cx + 4, cy + 17);
-                
-                // Wrap equipment name if too long
-                const wrappedDesc = doc.splitTextToSize(`Equip: ${equipName}`, tagW - 8);
-                doc.text(wrappedDesc, cx + 4, cy + 21);
-
-                // Update Grid Positions
-                cx += tagW + gap;
-                if (cx + tagW > 200) { cx = 10; cy += tagH + gap; }
-                if (cy + tagH > 280 && i < pointCounter) { doc.addPage(); cx = 10; cy = 25; }
+            for(let i=1; i<=pointCounter; i++) {
+                const type = document.getElementById(`energy-type-${i}`).value;
+                const c = energyConfig[type] || {bg:[255,255,255], text:[0,0,0]};
+                doc.setFillColor(...c.bg); doc.rect(cx, cy, 50.8, 25.4, 'F');
+                doc.setDrawColor(0); doc.rect(cx, cy, 50.8, 25.4, 'D');
+                doc.setTextColor(...c.text); doc.setFontSize(16); doc.text(document.getElementById(`tag-${i}`).value, cx+4, cy+10);
+                doc.setFontSize(5); doc.text(`DOC: ${currentID}`, cx+4, cy+18);
+                doc.text(`EQUIP: ${equip.substring(0,25)}`, cx+4, cy+22);
+                cx += 53; if (cx > 160) { cx = 10; cy += 28; }
             }
-            doc.save(`${currentID}_FINAL.pdf`);
+            doc.save(`${currentID}_LOTO_PROCEDURE.pdf`);
         }
+        window.onload = () => { updateID(); addNewPoint(); };
     </script>
 </body>
 </html>
