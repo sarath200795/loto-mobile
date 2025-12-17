@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>LOTO Mobile Pro</title>
+    <title>LOTO Mobile Pro - Full Compliance</title>
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#b91c1c">
     <meta name="apple-mobile-web-app-capable" content="yes">
@@ -41,12 +41,8 @@
     </div>
 
     <div class="sticky-bottom shadow-2xl">
-        <button onclick="addNewPoint()" class="flex-1 bg-slate-800 text-white font-bold py-4 rounded-xl active:scale-95 transition">
-            + ADD STEP
-        </button>
-        <button onclick="validateAndGenerate()" class="flex-1 bg-red-600 text-white font-bold py-4 rounded-xl shadow-lg active:scale-95 transition">
-            GENERATE PDF
-        </button>
+        <button onclick="addNewPoint()" class="flex-1 bg-slate-800 text-white font-bold py-4 rounded-xl active:scale-95 transition">+ ADD STEP</button>
+        <button onclick="validateAndGenerate()" class="flex-1 bg-red-600 text-white font-bold py-4 rounded-xl shadow-lg active:scale-95 transition">GENERATE PDF</button>
     </div>
 
     <script>
@@ -95,22 +91,16 @@
                     <span class="bg-red-600 text-white px-3 py-1 rounded-full text-[10px] font-bold">ISOLATION STEP ${id}</span>
                     <input type="text" id="tag-${id}" class="text-right font-mono font-bold text-red-600 bg-transparent w-20" readonly>
                 </div>
-                
-                <label class="block text-[10px] font-bold text-gray-400 uppercase mb-1">Energy Source</label>
                 <select id="energy-type-${id}" onchange="handleTagAutoGeneration(${id})" class="w-full border p-3 rounded-lg mb-4 validate bg-gray-50">
-                    <option value="">Select Type...</option>
+                    <option value="">Select Energy...</option>
                     ${Object.keys(energyConfig).map(opt => `<option value="${opt}">${opt}</option>`).join('')}
                 </select>
-                
-                <label class="block text-[10px] font-bold text-gray-400 uppercase mb-1">Required Devices</label>
                 <div class="multi-device-scroll mb-4">${deviceOptions.map(opt => `<label class="flex items-center mb-2"><input type="checkbox" class="device-checkbox-${id} mr-2" value="${opt}"><span class="text-sm">${opt}</span></label>`).join('')}</div>
-
                 <textarea id="isolate-${id}" class="w-full border p-3 rounded-lg text-sm mb-3 validate" rows="2" placeholder="Describe Isolation Action..."></textarea>
                 <textarea id="verify-${id}" class="w-full border p-3 rounded-lg text-sm mb-4 validate" rows="2" placeholder="Describe Verification..."></textarea>
-                
                 <div class="border-2 border-dashed border-gray-300 rounded-lg p-4 text-center bg-slate-50 active:bg-gray-100">
                     <label class="cursor-pointer block">
-                        <span class="text-red-600 font-bold text-sm block">📸 TAKE ISOLATOR PHOTO</span>
+                        <span class="text-red-600 font-bold text-sm block">📸 TAKE PHOTO</span>
                         <input type="file" id="file-${id}" accept="image/*" capture="environment" onchange="previewFile(this, ${id})" class="hidden">
                     </label>
                     <div id="preview-box-${id}" class="mt-2 hidden"><img id="img-target-${id}" class="w-full h-48 object-cover rounded-lg shadow-inner"></div>
@@ -124,11 +114,7 @@
             const file = input.files[0];
             if (file) { 
                 const reader = new FileReader(); 
-                reader.onload = (e) => { 
-                    imageDataStore[id] = e.target.result; 
-                    document.getElementById(`preview-box-${id}`).classList.remove('hidden'); 
-                    document.getElementById(`img-target-${id}`).src = e.target.result; 
-                }; 
+                reader.onload = (e) => { imageDataStore[id] = e.target.result; document.getElementById(`preview-box-${id}`).classList.remove('hidden'); document.getElementById(`img-target-${id}`).src = e.target.result; }; 
                 reader.readAsDataURL(file); 
             }
         }
@@ -139,15 +125,13 @@
                 if (!el.value.trim()) { el.classList.add('error-border'); isValid = false; } 
                 else { el.classList.remove('error-border'); }
             });
-            if (!isValid) { alert("Please fill all required fields marked in red."); return; }
+            if (!isValid) { alert("Fill all fields."); return; }
             generateLotoPDF();
         }
 
         async function generateLotoPDF() {
             const { jsPDF } = window.jspdf;
             const doc = new jsPDF('p', 'mm', 'a4');
-            
-            // Energy Analytics for Header
             const energyCounts = {};
             for (let i = 1; i <= pointCounter; i++) {
                 const type = document.getElementById(`energy-type-${i}`).value;
@@ -155,90 +139,88 @@
             }
             const energySummary = Object.entries(energyCounts).map(([type, count]) => `${type}-${count.toString().padStart(2, '0')}`).join(', ');
 
-            // --- PAGE 1: HEADER & TABLE ---
+            // Header Red Bar
             doc.setFillColor(180, 0, 0); doc.rect(0, 0, 210, 18, 'F');
             doc.setTextColor(255, 255, 255); doc.setFontSize(14); doc.setFont("helvetica", "bold");
             doc.text("LOCKOUT / TAGOUT POSTED PROCEDURE", 105, 12, { align: "center" });
 
+            // ID & Info Box
             doc.setLineWidth(0.8); doc.setDrawColor(0); doc.rect(10, 22, 190, 32);
             doc.setTextColor(0,0,0); doc.setFontSize(8);
             doc.text(`ID#: ${currentID}`, 14, 28);
             doc.text(`Facility: ${document.getElementById('facility').value}`, 14, 34);
             doc.text(`Location: ${document.getElementById('location').value}`, 14, 40);
-            doc.text(`Equipment: ${document.getElementById('description').value}`, 14, 46);
-            
-            doc.setFont("helvetica", "bold");
-            doc.text(`Total Energy Sources: ${pointCounter}`, 125, 28);
+            doc.text(`Description: ${document.getElementById('description').value}`, 14, 46);
+            doc.setFont("helvetica", "bold"); doc.text(`Total Energy Sources: ${pointCounter}`, 125, 28);
             const wrappedEnergy = doc.splitTextToSize(`Types: ${energySummary}`, 65);
             doc.text(wrappedEnergy, 125, 34);
-            doc.setFont("helvetica", "normal");
-            doc.text(`Revised: ${document.getElementById('revisedDate').value}`, 125, 48);
+            doc.setFont("helvetica", "normal"); doc.text(`Revised: ${document.getElementById('revisedDate').value}`, 125, 48);
 
-            // Table
+            // COMPLIANCE SECTION: Purpose, Scope, Authorization
+            let compY = 58;
+            doc.rect(10, compY, 190, 80); doc.setFontSize(7.5);
+            const data = [
+                { t: "Purpose:", p: "This procedure establishes the minimum requirements for the lockout of energy isolating devices whenever maintenance or servicing is done on machines or equipment." },
+                { t: "Scope:", p: "Ensure the equipment is stopped, isolated from all potentially hazardous energy sources and locked out before employees perform servicing or maintenance." },
+                { t: "Authorization:", p: "This procedure shall only be used by employees that have been trained as 'Authorized' employees under OSHA 1910.147." },
+                { t: "Application Process:", p: "1. Notify 2. Identify 3. Shutdown 4. Isolate 5. Lock/Tag 6. Release 7. Verify Isolation." }
+            ];
+            let tY = compY + 6;
+            data.forEach(s => {
+                doc.setFont("helvetica", "bold"); doc.text(s.t, 14, tY);
+                doc.setFont("helvetica", "normal");
+                const lines = doc.splitTextToSize(s.p, 180); doc.text(lines, 14, tY + 4);
+                tY += (lines.length * 4) + 6;
+            });
+
+            // TABLE PAGE 1
             const rows = [];
             for (let i = 1; i <= pointCounter; i++) {
                 const dev = Array.from(document.querySelectorAll(`.device-checkbox-${i}:checked`)).map(cb => cb.value).join(', ');
                 rows.push([document.getElementById(`tag-${i}`).value, dev, document.getElementById(`isolate-${i}`).value, "", document.getElementById(`verify-${i}`).value]);
             }
             doc.autoTable({
-                startY: 58, 
-                head: [['Tag', 'Devices', 'Action', 'Visual', 'Verify']], 
-                body: rows, 
-                theme: 'grid',
-                rowPageBreak: 'avoid',
+                startY: 142, head: [['Tag', 'Devices', 'Action', 'Visual', 'Verify']], body: rows, theme: 'grid', rowPageBreak: 'avoid',
                 styles: { minCellHeight: 40, verticalAlign: 'middle', fontSize: 7, lineWidth: 0.5, lineColor: [0,0,0] },
                 columnStyles: { 0: { cellWidth: 15, fontStyle: 'bold' }, 1: { cellWidth: 32 }, 2: { cellWidth: 39 }, 3: { cellWidth: 58 }, 4: { cellWidth: 46 } },
                 didDrawCell: (d) => { 
                     if (d.column.index === 0 && d.cell.section === 'body') {
-                        const energyType = document.getElementById(`energy-type-${d.row.index + 1}`).value;
-                        const colors = energyConfig[energyType];
-                        if (colors) {
-                            doc.setFillColor(colors.bg[0], colors.bg[1], colors.bg[2]);
-                            doc.rect(d.cell.x + 0.5, d.cell.y + 0.5, d.cell.width - 1, d.cell.height - 1, 'F');
-                            doc.setTextColor(colors.text[0], colors.text[1], colors.text[2]);
-                            doc.text(d.cell.text, d.cell.x + d.cell.width / 2, d.cell.y + d.cell.height / 2, { align: 'center', baseline: 'middle' });
-                        }
+                        const type = document.getElementById(`energy-type-${d.row.index + 1}`).value;
+                        const colors = energyConfig[type];
+                        if (colors) { doc.setFillColor(...colors.bg); doc.rect(d.cell.x+0.5, d.cell.y+0.5, d.cell.width-1, d.cell.height-1, 'F'); doc.setTextColor(...colors.text); doc.text(d.cell.text, d.cell.x+d.cell.width/2, d.cell.y+d.cell.height/2, { align:'center', baseline:'middle' }); }
                     }
-                    if (d.column.index === 3 && d.cell.section === 'body' && imageDataStore[d.row.index + 1]) {
-                        doc.addImage(imageDataStore[d.row.index + 1], 'JPEG', d.cell.x+2, d.cell.y+2, 54, 36);
-                    } 
+                    if (d.column.index === 3 && d.cell.section === 'body' && imageDataStore[d.row.index + 1]) { doc.addImage(imageDataStore[d.row.index + 1], 'JPEG', d.cell.x+2, d.cell.y+2, 54, 36); } 
                 }
             });
 
-            // --- PAGE 2: SEQUENCES ---
+            // PAGE 2: SEQUENCES
             doc.addPage();
             doc.setFillColor(180, 0, 0); doc.rect(0, 0, 210, 18, 'F');
             doc.setTextColor(255, 255, 255); doc.text("SAFETY SEQUENCES", 105, 12, { align: "center" });
             doc.autoTable({
                 startY: 25, head: [['#', 'SHUTDOWN SEQUENCE', 'DESCRIPTION']],
-                body: [['1', 'Notify', 'Notify affected employees.'], ['2', 'Review', 'Identify energy sources.'], ['3', 'Stop', 'Normal stop procedure.'], ['4', 'Isolate', 'Operate isolating devices.'], ['5', 'Lockout', 'Apply locks/tags.'], ['6', 'Release', 'Dissipate stored energy.'], ['7', 'Test', 'Attempt restart.']],
-                theme: 'grid', styles: { fontSize: 8.5 }, headStyles: { fillColor: [180, 0, 0] }
+                body: [['1','Notify','Inform all affected employees.'],['2','Review','Check LOTO requirements.'],['3','Stop','Standard shutdown.'],['4','Isolate','Operate disconnects.'],['5','Lockout','Apply locks/tags.'],['6','Release','Dissipate stored energy.'],['7','Verify','Test start then OFF.']],
+                theme:'grid', styles:{fontSize:8.5}, headStyles:{fillColor:[180,0,0]}
             });
             doc.autoTable({
-                startY: doc.lastAutoTable.finalY + 10, head: [['#', 'RESTORATION SEQUENCE', 'DESCRIPTION']],
-                body: [['1', 'Check Machine', 'Remove tools/items.'], ['2', 'Check Area', 'Employees safely positioned.'], ['3', 'Verify', 'Controls in neutral.'], ['4', 'Remove', 'Remove locks and re-energize.'], ['5', 'Notify', 'Inform servicing complete.']],
-                theme: 'grid', styles: { fontSize: 8.5 }, headStyles: { fillColor: [0, 80, 150] }
+                startY: doc.lastAutoTable.finalY+10, head: [['#', 'RESTORATION SEQUENCE', 'DESCRIPTION']],
+                body: [['1','Check','Remove tools/parts.'],['2','Area','Clear all personnel.'],['3','Verify','Controls in neutral.'],['4','Restore','Remove locks.'],['5','Notify','Inform work is done.']],
+                theme:'grid', styles:{fontSize:8.5}, headStyles:{fillColor:[0,80,150]}
             });
 
-            // --- PAGE 3: COMPACT TAGS ---
+            // PAGE 3: TAGS
             doc.addPage();
             doc.setFillColor(50, 50, 50); doc.rect(0, 0, 210, 18, 'F');
-            doc.setTextColor(255, 255, 255); doc.text("COMPACT ISOLATION TAGS (1\" x 2\")", 105, 12, { align: "center" });
+            doc.setTextColor(255, 255, 255); doc.text("POINT TAGS (1\" x 2\")", 105, 12, { align: "center" });
             const tagW = 50.8, tagH = 25.4; let cx = 10, cy = 25;
             for (let i = 1; i <= pointCounter; i++) {
-                const type = document.getElementById(`energy-type-${i}`).value;
-                const colors = energyConfig[type] || { bg: [255, 255, 255], text: [0, 0, 0] };
-                doc.setFillColor(colors.bg[0], colors.bg[1], colors.bg[2]);
-                doc.rect(cx, cy, tagW, tagH, 'F');
-                doc.setDrawColor(0); doc.setLineWidth(0.3); doc.rect(cx, cy, tagW, tagH, 'D');
-                doc.setTextColor(colors.text[0], colors.text[1], colors.text[2]);
-                doc.setFontSize(18); doc.setFont("helvetica", "bold");
-                doc.text(document.getElementById(`tag-${i}`).value, cx+4, cy+12);
-                doc.setFontSize(5); doc.setFont("helvetica", "normal");
-                doc.text(`ID: ${currentID}`, cx+4, cy+18);
+                const colors = energyConfig[document.getElementById(`energy-type-${i}`).value] || {bg:[255,255,255],text:[0,0,0]};
+                doc.setFillColor(...colors.bg); doc.rect(cx, cy, tagW, tagH, 'F');
+                doc.setDrawColor(0); doc.rect(cx, cy, tagW, tagH, 'D');
+                doc.setTextColor(...colors.text); doc.setFontSize(18); doc.text(document.getElementById(`tag-${i}`).value, cx+4, cy+12);
                 cx += tagW + 2; if (cx + tagW > 200) { cx = 10; cy += tagH + 2; }
             }
-            doc.save(`${currentID}_FINAL.pdf`);
+            doc.save(`${currentID}.pdf`);
         }
     </script>
 </body>
