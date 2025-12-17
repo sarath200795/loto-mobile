@@ -1,0 +1,16 @@
+{
+  "name": "LOTO Mobile Designer",
+  "short_name": "LOTO Pro",
+  "start_url": "index.html",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#b91c1c",
+  "description": "Industrial Lockout Tagout Procedure Designer",
+  "icons": [
+    {
+      "src": "https://cdn-icons-png.flaticon.com/512/564/564429.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
