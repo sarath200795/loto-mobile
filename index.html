@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>LOTO Pro - Image Fix Edition</title>
+    <title>LOTO Pro - Production Fix</title>
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#b91c1c">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrious/4.0.2/qrious.min.js"></script>
@@ -14,9 +14,10 @@
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap');
         body { font-family: 'Inter', sans-serif; padding-bottom: 140px; background-color: #f8fafc; }
         .label-style { font-size: 11px; font-weight: 800; color: #1e293b; text-transform: uppercase; margin-bottom: 6px; display: block; }
-        .multi-device-scroll { max-height: 250px; overflow-y: auto; border: 2px solid #cbd5e1; padding: 12px; border-radius: 12px; background: #ffffff; }
+        .multi-device-scroll { max-height: 200px; overflow-y: auto; border: 2px solid #cbd5e1; padding: 12px; border-radius: 12px; background: #ffffff; }
         .sticky-bottom { position: fixed; bottom: 0; left: 0; right: 0; background: white; padding: 20px; z-index: 1000; display: flex; gap: 12px; box-shadow: 0 -10px 25px rgba(0,0,0,0.1); }
-        .step-card { border-left: 8px solid #e2e8f0; border-radius: 16px; background: white; padding: 24px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); }
+        .step-card { border-left: 8px solid #e2e8f0; border-radius: 16px; background: white; padding: 24px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
+        .validate.error-border { border-color: #ef4444 !important; background-color: #fef2f2; }
     </style>
 </head>
 <body>
@@ -27,8 +28,8 @@
         </header>
 
         <div class="bg-white p-6 rounded-2xl border border-slate-200 mb-8 space-y-4 shadow-sm">
-            <div><label class="label-style">Facility</label><input type="text" id="facility" oninput="updateID()" class="w-full border-2 p-3 rounded-xl validate"></div>
-            <div><label class="label-style">Equipment</label><input type="text" id="description" oninput="updateID()" class="w-full border-2 p-3 rounded-xl validate"></div>
+            <div><label class="label-style">Facility</label><input type="text" id="facility" oninput="updateID()" class="w-full border-2 p-3 rounded-xl validate" placeholder="e.g. PLANT-A"></div>
+            <div><label class="label-style">Equipment</label><input type="text" id="description" oninput="updateID()" class="w-full border-2 p-3 rounded-xl validate" placeholder="e.g. PUMP-01"></div>
             <div class="grid grid-cols-2 gap-4">
                 <div><label class="label-style">Location</label><input type="text" id="location" oninput="updateID()" class="w-full border-2 p-3 rounded-xl validate"></div>
                 <div><label class="label-style">Date</label><input type="date" id="revisedDate" class="w-full border-2 p-3 rounded-xl validate"></div>
@@ -39,13 +40,13 @@
     </div>
 
     <div class="sticky-bottom">
-        <button onclick="addNewPoint()" class="flex-1 bg-slate-900 text-white font-black py-4 rounded-2xl">+ ADD STEP</button>
-        <button onclick="validateAndGenerate()" class="flex-1 bg-red-600 text-white font-black py-4 rounded-2xl italic">GENERATE PDF</button>
+        <button onclick="addNewPoint()" class="flex-1 bg-slate-900 text-white font-black py-4 rounded-2xl shadow-lg">+ STEP</button>
+        <button onclick="validateAndGenerate()" class="flex-1 bg-red-600 text-white font-black py-4 rounded-2xl shadow-lg italic">PDF</button>
     </div>
 
     <script>
         let uniqueIdCounter = 0;
-        let imageDataStore = {}; // This is the key store for PDF images
+        let imageDataStore = {}; 
         let currentID = "";
 
         const energyConfig = {
@@ -54,7 +55,7 @@
             "Hydraulic": { code: "H", bg: [194, 65, 12], text: [255, 255, 255] }
         };
 
-        const deviceOptions = ["Safety Padlock", "Lockout Hasp", "Breaker Lockout", "Ball Valve Lockout"];
+        const deviceOptions = ["Padlock", "Hasp", "Breaker Lock", "Valve Lock"];
 
         function updateID() {
             const fac = document.getElementById('facility').value.trim().toUpperCase() || "FAC";
@@ -66,50 +67,61 @@
         function addNewPoint() {
             uniqueIdCounter++;
             const id = uniqueIdCounter;
-            const container = document.getElementById('points-list');
             const card = document.createElement('div');
             card.id = `step-container-${id}`;
             card.dataset.internalId = id;
             card.className = "step-card mb-4";
             card.innerHTML = `
                 <div class="flex justify-between items-center mb-4 border-b pb-2">
-                    <span class="font-black text-slate-800">STEP #${id}</span>
+                    <span class="font-black text-slate-800 uppercase italic">POINT #${id}</span>
                     <input type="text" id="tag-${id}" class="text-right font-mono font-bold text-red-600 bg-transparent w-16" readonly>
                 </div>
                 <div class="space-y-4">
                     <select id="energy-type-${id}" onchange="reindexAllSteps()" class="w-full border-2 p-3 rounded-xl validate">
-                        <option value="">-- Energy Type --</option>
+                        <option value="">Energy Type</option>
                         ${Object.keys(energyConfig).map(k => `<option value="${k}">${k}</option>`).join('')}
                     </select>
                     <div class="multi-device-scroll">${deviceOptions.map(o => `<label class="flex items-center mb-2"><input type="checkbox" class="device-checkbox-${id} mr-2"> <span class="text-xs font-bold">${o}</span></label>`).join('')}</div>
-                    <textarea id="isolate-${id}" class="w-full border-2 p-3 rounded-xl validate" rows="2" placeholder="Isolation Method"></textarea>
+                    <textarea id="isolate-${id}" class="w-full border-2 p-3 rounded-xl validate" rows="2" placeholder="Method"></textarea>
                     <textarea id="verify-${id}" class="w-full border-2 p-3 rounded-xl validate" rows="2" placeholder="Verification"></textarea>
                     
-                    <div class="bg-slate-50 border-2 border-dashed border-slate-300 rounded-2xl p-6 text-center">
-                        <label class="cursor-pointer block">
-                            <span class="text-red-600 font-black text-xs uppercase italic">📸 Capture Isolator Photo</span>
-                            <input type="file" id="file-${id}" accept="image/*" capture="environment" onchange="processImage(this, ${id})" class="hidden">
-                        </label>
-                        <div id="preview-box-${id}" class="mt-3 hidden shadow-lg rounded-xl overflow-hidden border-4 border-white">
+                    <div class="bg-slate-50 border-2 border-dashed border-slate-300 rounded-2xl p-6 text-center cursor-pointer" onclick="document.getElementById('file-${id}').click()">
+                        <span class="text-red-600 font-black text-xs uppercase">📸 Capture Site Photo</span>
+                        <input type="file" id="file-${id}" accept="image/*" capture="environment" onchange="processAndCompress(this, ${id})" class="hidden">
+                        <div id="preview-box-${id}" class="mt-3 hidden shadow-md rounded-xl overflow-hidden border-4 border-white">
                             <img id="img-target-${id}" class="w-full h-48 object-cover">
                         </div>
                     </div>
                 </div>`;
-            container.appendChild(card);
+            document.getElementById('points-list').appendChild(card);
+            reindexAllSteps();
         }
 
-        // IMPROVED IMAGE PROCESSING
-        function processImage(input, id) {
+        // --- NEW: IMAGE COMPRESSOR ---
+        function processAndCompress(input, id) {
             const file = input.files[0];
             if (file) {
                 const reader = new FileReader();
-                reader.onload = (e) => {
-                    const imgData = e.target.result;
-                    // Update the UI Preview
-                    document.getElementById(`img-target-${id}`).src = imgData;
-                    document.getElementById(`preview-box-${id}`).classList.remove('hidden');
-                    // Store in our data store for the PDF
-                    imageDataStore[id] = imgData;
+                reader.onload = function(e) {
+                    const img = new Image();
+                    img.onload = function() {
+                        const canvas = document.createElement('canvas');
+                        const MAX_WIDTH = 800;
+                        const scaleSize = MAX_WIDTH / img.width;
+                        canvas.width = MAX_WIDTH;
+                        canvas.height = img.height * scaleSize;
+
+                        const ctx = canvas.getContext('2d');
+                        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+
+                        const compressedBase64 = canvas.toDataURL('image/jpeg', 0.7); // 70% quality
+                        
+                        // Update UI and Data Store
+                        document.getElementById(`img-target-${id}`).src = compressedBase64;
+                        document.getElementById(`preview-box-${id}`).classList.remove('hidden');
+                        imageDataStore[id] = compressedBase64;
+                    };
+                    img.src = e.target.result;
                 };
                 reader.readAsDataURL(file);
             }
@@ -130,60 +142,60 @@
             });
         }
 
+        function validateAndGenerate() {
+            let ok = true;
+            document.querySelectorAll('.validate').forEach(el => {
+                if (!el.value.trim()) { el.classList.add('error-border'); ok = false; }
+                else { el.classList.remove('error-border'); }
+            });
+            if (ok) generatePDF();
+            else alert("Fill all fields.");
+        }
+
         async function generatePDF() {
             const { jsPDF } = window.jspdf;
             const doc = new jsPDF('p', 'mm', 'a4');
             const qr = new QRious({ value: currentID, size: 200 });
             const steps = document.querySelectorAll('.step-card');
 
-            // Header Box
+            // Header Section
             doc.setFillColor(30, 41, 59); doc.rect(0, 0, 210, 20, 'F');
-            doc.setTextColor(255, 255, 255); doc.setFontSize(14); doc.text("LOTO POSTED PROCEDURE", 10, 13);
-            doc.addImage(qr.toDataURL(), 'PNG', 175, 2, 15, 15);
+            doc.setTextColor(255, 255, 255); doc.setFontSize(14); doc.text("LOTO INDUSTRIAL PROCEDURE", 10, 13);
+            doc.addImage(qr.toDataURL(), 'PNG', 180, 2, 16, 16);
 
-            // Isolation Table
-            const tableBody = [];
+            // Table Data
+            const tableData = [];
             steps.forEach(card => {
                 const id = card.dataset.internalId;
-                tableBody.push([
+                tableData.push([
                     document.getElementById(`tag-${id}`).value,
-                    "Hardware List", // Simplified for demo
+                    "Hardware Listed", 
                     document.getElementById(`isolate-${id}`).value,
-                    "", // Image Column (Column Index 3)
+                    "", 
                     document.getElementById(`verify-${id}`).value,
-                    id // Index for image fetching
+                    id 
                 ]);
             });
 
             doc.autoTable({
-                startY: 60,
+                startY: 40,
                 head: [['TAG', 'HARDWARE', 'METHOD', 'VISUAL', 'VERIFY']],
-                body: tableBody.map(r => r.slice(0, 5)),
+                body: tableData.map(r => r.slice(0, 5)),
                 theme: 'grid',
                 styles: { minCellHeight: 45, verticalAlign: 'middle', fontSize: 8 },
                 columnStyles: { 3: { cellWidth: 55 } },
                 didDrawCell: (data) => {
-                    // Check if we are drawing the Visual column (Index 3) in the body
                     if (data.column.index === 3 && data.cell.section === 'body') {
-                        const stepId = tableBody[data.row.index][5];
+                        const stepId = tableData[data.row.index][5];
                         const img = imageDataStore[stepId];
                         if (img) {
-                            try {
-                                // Add image to the PDF cell
-                                doc.addImage(img, 'JPEG', data.cell.x + 2, data.cell.y + 2, 51, 41);
-                            } catch (e) {
-                                console.error("Image failed to render in PDF", e);
-                            }
+                            doc.addImage(img, 'JPEG', data.cell.x + 2, data.cell.y + 2, 51, 41);
                         }
                     }
                 }
             });
 
-            doc.save(`${currentID}.pdf`);
-        }
-
-        function validateAndGenerate() {
-            generatePDF();
+            doc.save(`${currentID}_FINAL.pdf`);
         }
 
         window.onload = () => { addNewPoint(); };
