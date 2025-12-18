@@ -51,7 +51,6 @@
         let imageDataStore = {}; 
         let currentID = "";
 
-        // Expanded Energy Sources List
         const energyConfig = {
             "Electrical": { code: "E", bg: [185, 28, 28], text: [255, 255, 255] },
             "Mechanical": { code: "M", bg: [30, 64, 175], text: [255, 255, 255] },
@@ -179,7 +178,6 @@
             doc.text(`EQUIPMENT: ${equip}`, 14, 43);
             doc.text(`LOCATION: ${loc}`, 14, 50);
             
-            // Section 1: Number and Types of Energy Sources
             doc.setFont("helvetica", "bold");
             doc.text(`TOTAL SOURCES: ${steps.length}`, 115, 36);
             doc.setFont("helvetica", "normal");
@@ -241,7 +239,7 @@
                 headStyles: { fillColor: [30, 64, 175] }
             });
 
-            // PAGE 3: TAGS
+            // PAGE 3: TAGS (Updated with Document ID)
             doc.addPage();
             let cx = 15, cy = 30;
             tableRows.forEach((row) => {
@@ -250,16 +248,35 @@
                 const type = document.getElementById(`energy-type-${sid}`).value;
                 const config = energyConfig[type] || {bg: [200, 200, 200], text: [0, 0, 0]};
 
-                doc.setDrawColor(0); doc.setFillColor(255, 255, 255); doc.rect(cx, cy, 60, 35, 'FD');
-                doc.setFillColor(...config.bg); doc.rect(cx, cy, 35, 12, 'F');
-                doc.setTextColor(...config.text); doc.setFontSize(14); doc.setFont("helvetica", "bold");
+                // Tag Background & Border
+                doc.setDrawColor(0); 
+                doc.setFillColor(255, 255, 255); 
+                doc.rect(cx, cy, 60, 35, 'FD');
+
+                // Tag Header (Energy Code)
+                doc.setFillColor(...config.bg); 
+                doc.rect(cx, cy, 35, 12, 'F');
+                doc.setTextColor(...config.text); 
+                doc.setFontSize(14); 
+                doc.setFont("helvetica", "bold");
                 doc.text(tagNum, cx + 17.5, cy + 8.5, { align: 'center' });
 
-                doc.setTextColor(30, 41, 59); doc.setFontSize(7);
+                // Tag Details
+                doc.setTextColor(30, 41, 59); 
+                doc.setFontSize(7);
+                doc.setFont("helvetica", "normal");
                 doc.text(`EQ: ${equip.substring(0, 22)}`, cx + 2, cy + 18);
-                doc.text(`LOC: ${loc.substring(0, 22)}`, cx + 2, cy + 24);
+                doc.text(`LOC: ${loc.substring(0, 22)}`, cx + 2, cy + 23);
+                
+                // Document ID Placement
+                doc.setFontSize(6);
+                doc.setTextColor(100, 116, 139);
+                doc.text(`PROC ID: ${currentID}`, cx + 2, cy + 28);
+
+                // QR Code
                 doc.addImage(qrData, 'PNG', cx + 38, cy + 4, 18, 18);
 
+                // Grid Math
                 cx += 65;
                 if (cx > 160) { cx = 15; cy += 45; }
                 if (cy > 240) { doc.addPage(); cx = 15; cy = 30; }
