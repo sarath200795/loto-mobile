@@ -62,8 +62,6 @@
             "Hydraulic": { code: "H", bg: [194, 65, 12], text: [255, 255, 255] }
         };
 
-        const deviceOptions = ["Padlock", "Steel Hasp", "Breaker Lockout", "Wall Switch Lock", "Valve Lockout", "Safety Tag"];
-
         function resetApp() {
             if(confirm('Clear all data and photos?')) {
                 document.getElementById('points-list').innerHTML = '';
@@ -164,10 +162,17 @@
             const steps = document.querySelectorAll('.step-card');
             const qrData = new QRious({ value: currentID, size: 300 }).toDataURL();
 
-            // PAGE 1 & 2: Procedure & Sequences (Omitted for brevity, assuming standard logic)
-            doc.text("LOTO PROCEDURE", 10, 10);
-            
-            // Generate Data Rows
+            // PAGE 1: Procedure Details & Table
+            doc.setFillColor(30, 41, 59); doc.rect(0, 0, 210, 22, 'F');
+            doc.setTextColor(255, 255, 255); doc.setFontSize(16); doc.text("LOTO POSTED PROCEDURE", 10, 14);
+
+            doc.setFillColor(248, 250, 252); doc.rect(10, 28, 190, 36, 'FD'); 
+            doc.setTextColor(30, 41, 59); doc.setFontSize(9);
+            doc.text(`ID: ${currentID}`, 14, 36);
+            doc.text(`FACILITY: ${document.getElementById('facility').value}`, 14, 43);
+            doc.text(`EQUIPMENT: ${equip}`, 14, 57);
+            doc.addImage(qrData, 'PNG', 170, 32, 25, 25);
+
             const tableRows = [];
             steps.forEach(card => {
                 const id = card.dataset.internalId;
@@ -178,6 +183,58 @@
                     document.getElementById(`verify-${id}`).value, 
                     id
                 ]);
+            });
+
+            doc.autoTable({
+                startY: 70,
+                head: [['TAG', 'ISOLATION METHOD', 'VISUAL', 'VERIFICATION']],
+                body: tableRows.map(r => r.slice(0, 4)),
+                styles: { fontSize: 7, minCellHeight: 40, verticalAlign: 'middle' },
+                columnStyles: { 0: {cellWidth: 15}, 2: {cellWidth: 50} },
+                didDrawCell: (d) => {
+                    if (d.column.index === 2 && d.cell.section === 'body') {
+                        const sid = tableRows[d.row.index][4];
+                        if (imageDataStore[sid]) doc.addImage(imageDataStore[sid], 'JPEG', d.cell.x+2, d.cell.y+2, 46, 36);
+                    }
+                }
+            });
+
+            // PAGE 2: SEQUENCES (FROM UPLOADED FILES)
+            doc.addPage();
+            doc.setFillColor(30, 41, 59); doc.rect(0, 0, 210, 15, 'F');
+            doc.setTextColor(255, 255, 255); doc.setFontSize(12); doc.text("SHUTDOWN, LOCK, TAG & TEST SEQUENCE", 105, 10, { align: "center" });
+
+            doc.autoTable({
+                startY: 20,
+                head: [['#', 'STEP', 'DESCRIPTION']],
+                body: [
+                    ['1', 'Notify Employees', 'Notify all affected employees that servicing or maintenance is required...'],
+                    ['2', 'Review Procedure', 'Authorized employee shall refer to company procedure to identify hazards...'],
+                    ['3', 'Machine Stop', 'Shut it down by normal stopping procedure (stop button, switch, etc.)...'],
+                    ['4', 'Isolate Energy', 'Follow graphical procedure to de-activate energy isolating device(s)...'],
+                    ['5', 'Lockout Energy', 'Lock out & tag out the energy isolating device(s) with individual locks...'],
+                    ['6', 'Dissipate Energy', 'Residual energy (capacitors, springs, pressure) must be dissipated or restrained...'],
+                    ['7', 'Attempt Restart', 'Verify isolation by operating push button or controls. Return to off position.']
+                ],
+                headStyles: { fillColor: [185, 28, 28] },
+                styles: { fontSize: 8 }
+            });
+
+            doc.setFillColor(30, 41, 59); doc.rect(0, doc.lastAutoTable.finalY + 10, 210, 15, 'F');
+            doc.setTextColor(255, 255, 255); doc.text("RESTORE TO SERVICE SEQUENCE", 105, doc.lastAutoTable.finalY + 20, { align: "center" });
+
+            doc.autoTable({
+                startY: doc.lastAutoTable.finalY + 25,
+                head: [['#', 'STEP', 'DESCRIPTION']],
+                body: [
+                    ['1', 'Check Machine', 'Ensure nonessential items have been removed and components are intact...'],
+                    ['2', 'Check Area', 'Ensure all employees have been safely positioned or removed from the area...'],
+                    ['3', 'Verify Machine', 'Verify that the controls are in neutral...'],
+                    ['4', 'Remove Lockout', 'Remove locks, tags and devices. Re-energize in reverse order...'],
+                    ['5', 'Notify Employees', 'Notify affected employees that servicing is completed and ready for use...']
+                ],
+                headStyles: { fillColor: [30, 64, 175] },
+                styles: { fontSize: 8 }
             });
 
             // PAGE 3: PHYSICAL TAGS
@@ -192,43 +249,25 @@
                 const type = document.getElementById(`energy-type-${sid}`).value;
                 const config = energyConfig[type] || {bg: [200, 200, 200], text: [0, 0, 0]};
 
-                // Main Tag Border
-                doc.setDrawColor(0); doc.setLineWidth(0.5);
-                doc.setFillColor(255, 255, 255); doc.rect(cx, cy, 60, 35, 'FD');
-                
-                // Color Header for Tag Number
+                doc.setDrawColor(0); doc.setFillColor(255, 255, 255); doc.rect(cx, cy, 60, 35, 'FD');
                 doc.setFillColor(...config.bg); doc.rect(cx, cy, 35, 12, 'F');
-                doc.setTextColor(...config.text);
-                doc.setFontSize(16); doc.setFont("helvetica", "bold");
+                doc.setTextColor(...config.text); doc.setFontSize(16); doc.setFont("helvetica", "bold");
                 doc.text(tagNum, cx + 17.5, cy + 8.5, { align: 'center' });
 
-                // Content Section (Left Side)
-                doc.setTextColor(30, 41, 59);
-                doc.setFontSize(7); doc.setFont("helvetica", "bold");
+                doc.setTextColor(30, 41, 59); doc.setFontSize(7); doc.setFont("helvetica", "bold");
                 doc.text("EQUIPMENT:", cx + 2, cy + 18);
-                doc.setFont("helvetica", "normal");
-                doc.text(equip.substring(0, 22), cx + 2, cy + 21);
-
-                doc.setFont("helvetica", "bold");
-                doc.text("LOCATION:", cx + 2, cy + 26);
-                doc.setFont("helvetica", "normal");
-                doc.text(loc.substring(0, 22), cx + 2, cy + 29);
-
-                doc.setFontSize(5); doc.setTextColor(150, 150, 150);
-                doc.text(`REF: ${currentID}`, cx + 2, cy + 33);
-
-                // QR Code (Right Side)
+                doc.setFont("helvetica", "normal"); doc.text(equip.substring(0, 22), cx + 2, cy + 21);
+                doc.setFont("helvetica", "bold"); doc.text("LOCATION:", cx + 2, cy + 26);
+                doc.setFont("helvetica", "normal"); doc.text(loc.substring(0, 22), cx + 2, cy + 29);
+                doc.setFontSize(5); doc.setTextColor(150, 150, 150); doc.text(`REF: ${currentID}`, cx + 2, cy + 33);
                 doc.addImage(qrData, 'PNG', cx + 38, cy + 4, 18, 18);
-                doc.setFontSize(5); doc.setTextColor(30, 41, 59);
-                doc.text("SCAN FOR PROC.", cx + 39, cy + 24);
 
-                // Grid Layout
                 cx += 65;
                 if (cx > 160) { cx = 15; cy += 45; }
                 if (cy > 240) { doc.addPage(); cx = 15; cy = 30; }
             });
 
-            doc.save(`${currentID}_TAGS.pdf`);
+            doc.save(`${currentID}_LOTO_PROCEDURE.pdf`);
         }
         window.onload = () => { updateID(); addNewPoint(); };
     </script>
