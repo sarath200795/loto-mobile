@@ -11,67 +11,58 @@
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap');
         body { font-family: 'Inter', sans-serif; padding-bottom: 140px; background-color: #f8fafc; }
-        .glass-header { background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px); border-bottom: 2px solid #e2e8f0; position: sticky; top: 0; z-index: 100; }
         .label-style { font-size: 11px; font-weight: 800; color: #1e293b; text-transform: uppercase; margin-bottom: 6px; display: block; }
-        .multi-device-scroll { max-height: 200px; overflow-y: auto; border: 2px solid #cbd5e1; padding: 12px; border-radius: 12px; background: #ffffff; }
-        .sticky-bottom { position: fixed; bottom: 0; left: 0; right: 0; background: white; padding: 20px; z-index: 1000; display: flex; gap: 12px; box-shadow: 0 -10px 25px rgba(0,0,0,0.1); }
         .step-card { border-left-width: 8px; border-radius: 16px; transition: all 0.3s ease; }
-        .validate.error-border { border: 2.5px solid #ef4444 !important; }
+        .validate.error-border { border: 2.5px solid #ef4444 !important; background-color: #fff1f1; }
     </style>
 </head>
 <body>
-    <div class="glass-header p-4 mb-6">
+    <div class="sticky top-0 bg-white/95 backdrop-blur-md p-4 mb-6 shadow-sm z-50 border-b">
         <div class="max-w-lg mx-auto flex justify-between items-center">
             <div>
                 <h1 class="text-2xl font-black text-slate-900 italic">LOTO<span class="text-red-600">PRO</span></h1>
-                <p class="text-[9px] text-slate-400 font-bold uppercase">Compliance Engine</p>
             </div>
             <div class="text-right">
-                <button onclick="resetApp()" class="text-[10px] font-bold text-slate-400 uppercase hover:text-red-600 mb-1 block">Reset</button>
-                <p id="displayID" class="text-xs font-mono font-bold text-red-600 bg-red-50 px-3 py-1.5 rounded-lg border border-red-100">PENDING</p>
+                <button onclick="resetApplication()" class="text-[10px] font-bold text-slate-400 uppercase hover:text-red-600">Reset All</button>
+                <p id="displayID" class="text-xs font-mono font-bold text-red-600">PENDING</p>
             </div>
         </div>
     </div>
 
     <div class="p-4 max-w-lg mx-auto">
         <div class="bg-white p-6 rounded-2xl shadow-md border border-slate-200 mb-8 space-y-4">
-            <div><label class="label-style">Facility</label><input type="text" id="facility" oninput="updateID()" class="w-full border-slate-300 border-2 p-3 rounded-xl validate" placeholder="NORTH PLANT"></div>
+            <div><label class="label-style">Facility</label><input type="text" id="facility" oninput="updateID()" class="w-full border-slate-300 border-2 p-3 rounded-xl validate" placeholder="Plant Name"></div>
+            <div><label class="label-style">Equipment</label><input type="text" id="description" oninput="updateID()" class="w-full border-slate-300 border-2 p-3 rounded-xl validate" placeholder="Machine Name"></div>
             <div class="grid grid-cols-2 gap-4">
-                <div><label class="label-style">Location</label><input type="text" id="location" oninput="updateID()" class="w-full border-slate-300 border-2 p-3 rounded-xl validate" placeholder="ZONE 1"></div>
+                <div><label class="label-style">Location</label><input type="text" id="location" oninput="updateID()" class="w-full border-slate-300 border-2 p-3 rounded-xl validate" placeholder="Section"></div>
                 <div><label class="label-style">Date</label><input type="date" id="revisedDate" class="w-full border-slate-300 border-2 p-3 rounded-xl validate"></div>
             </div>
-            <div><label class="label-style">Equipment</label><input type="text" id="description" oninput="updateID()" class="w-full border-slate-300 border-2 p-3 rounded-xl validate" placeholder="CONVEYOR MOTOR"></div>
         </div>
-        
+
         <div id="points-list" class="space-y-6"></div>
     </div>
 
-    <div class="sticky-bottom">
+    <div class="fixed bottom-0 left-0 right-0 bg-white p-4 flex gap-4 shadow-[0_-10px_20px_rgba(0,0,0,0.05)]">
         <button onclick="addNewPoint()" class="flex-1 bg-slate-900 text-white font-black py-4 rounded-2xl">+ ADD STEP</button>
         <button onclick="validateAndGenerate()" class="flex-1 bg-red-600 text-white font-black py-4 rounded-2xl italic">GENERATE PDF</button>
     </div>
 
     <script>
         let uniqueIdCounter = 0;
-        let imageDataStore = {}; // Object to store Base64 strings indexed by internal ID
+        let imageDataStore = new Map(); // Using Map for better memory management of photos
         let currentID = "";
 
         const energyConfig = {
             "Electrical": { code: "E", bg: [185, 28, 28], text: [255, 255, 255] },
             "Mechanical": { code: "M", bg: [30, 64, 175], text: [255, 255, 255] },
-            "Compressed Air": { code: "CA", bg: [8, 145, 178], text: [255, 255, 255] },
-            "Radiation": { code: "R", bg: [234, 179, 8], text: [0, 0, 0] },
-            "Chemical": { code: "C", bg: [21, 128, 61], text: [255, 255, 255] },
-            "Hydraulic": { code: "H", bg: [194, 65, 12], text: [255, 255, 255] }
+            "Compressed Air": { code: "CA", bg: [8, 145, 178], text: [255, 255, 255] }
         };
 
-        const deviceOptions = ["Padlock", "Steel Hasp", "Breaker Lock", "Ball Valve Lockout", "Safety Tag"];
-
-        function resetApp() {
-            if(confirm("Clear all data?")) {
+        function resetApplication() {
+            if(confirm("This will delete all progress and photos. Continue?")) {
+                imageDataStore.clear();
                 document.getElementById('points-list').innerHTML = '';
                 document.querySelectorAll('input').forEach(i => i.value = '');
-                imageDataStore = {};
                 uniqueIdCounter = 0;
                 updateID();
                 addNewPoint();
@@ -79,90 +70,82 @@
         }
 
         function updateID() {
-            const fac = document.getElementById('facility').value.trim() || "FAC";
-            const loc = document.getElementById('location').value.trim() || "LOC";
-            const desc = document.getElementById('description').value.substring(0,5) || "DESC";
-            currentID = `${fac}-${loc}-${desc}`.toUpperCase().replace(/\s+/g, '');
+            const fac = document.getElementById('facility').value.trim().toUpperCase() || "FAC";
+            const desc = document.getElementById('description').value.trim().toUpperCase().substring(0,5) || "EQ";
+            currentID = `${fac}-${desc}-${new Date().getTime().toString().slice(-4)}`;
             document.getElementById('displayID').innerText = currentID;
         }
 
-        function reindexAllSteps() {
-            const steps = document.querySelectorAll('.step-card');
-            const typeCounts = {};
-            steps.forEach((card, index) => {
-                const id = card.dataset.internalId;
-                card.querySelector('.point-num-label').innerText = `STEP #${index + 1}`;
-                const type = document.getElementById(`energy-type-${id}`).value;
-                if (type) {
-                    const code = energyConfig[type].code;
-                    typeCounts[code] = (typeCounts[code] || 0) + 1;
-                    document.getElementById(`tag-${id}`).value = `${code}-${typeCounts[code]}`;
-                    card.style.borderLeftColor = `rgb(${energyConfig[type].bg.join(',')})`;
-                }
-            });
+        function handleImageUpload(input, id) {
+            const file = input.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    const base64String = e.target.result;
+                    // Store in memory Map
+                    imageDataStore.set(id.toString(), base64String);
+                    
+                    // Show Preview
+                    const previewContainer = document.getElementById(`preview-box-${id}`);
+                    const imgElement = document.getElementById(`img-target-${id}`);
+                    imgElement.src = base64String;
+                    previewContainer.classList.remove('hidden');
+                };
+                reader.readAsDataURL(file);
+            }
         }
 
         function addNewPoint() {
             uniqueIdCounter++;
             const id = uniqueIdCounter;
             const card = document.createElement('div');
-            card.id = `step-container-${id}`;
-            card.dataset.internalId = id;
             card.className = "step-card bg-white p-6 rounded-2xl shadow-lg border border-slate-200 mb-4";
+            card.dataset.internalId = id;
             card.innerHTML = `
-                <div class="mb-4 flex justify-between items-center border-b pb-3">
-                    <span class="point-num-label font-black text-sm italic">STEP #${id}</span>
-                    <input type="text" id="tag-${id}" class="text-right font-mono font-bold text-red-600 bg-red-50 p-1 w-16 rounded" readonly>
+                <div class="flex justify-between items-center mb-4 border-b pb-2">
+                    <span class="font-black text-slate-800 italic">STEP #${id}</span>
+                    <button onclick="this.closest('.step-card').remove()" class="text-slate-300 hover:text-red-500 font-bold">REMOVE</button>
                 </div>
-                <div class="space-y-5">
+                <div class="space-y-4">
                     <div>
                         <label class="label-style">Energy Source</label>
-                        <select id="energy-type-${id}" onchange="reindexAllSteps()" class="w-full border-2 p-3 rounded-xl validate">
+                        <select id="energy-${id}" class="w-full border-2 p-3 rounded-xl validate">
                             <option value="">-- Select --</option>
                             ${Object.keys(energyConfig).map(k => `<option value="${k}">${k}</option>`).join('')}
                         </select>
                     </div>
                     <div>
-                        <label class="label-style">Hardware</label>
-                        <div class="multi-device-scroll">
-                            ${deviceOptions.map(o => `<label class="flex items-center mb-2 text-xs font-bold"><input type="checkbox" class="device-checkbox-${id} mr-2"> ${o}</label>`).join('')}
+                        <label class="label-style">Isolation Method</label>
+                        <textarea id="method-${id}" class="w-full border-2 p-3 rounded-xl validate" rows="2" placeholder="e.g. Turn off breaker #12"></textarea>
+                    </div>
+                    
+                    <div class="border-2 border-dashed border-slate-200 rounded-2xl p-6 text-center bg-slate-50 cursor-pointer hover:bg-slate-100 transition" 
+                         onclick="document.getElementById('file-input-${id}').click()">
+                        <p class="text-red-600 font-black text-xs uppercase">📸 CAPTURE PHOTO</p>
+                        <input type="file" id="file-input-${id}" accept="image/*" capture="environment" class="hidden" 
+                               onchange="handleImageUpload(this, ${id})">
+                        
+                        <div id="preview-box-${id}" class="mt-4 hidden border-4 border-white shadow-lg rounded-lg overflow-hidden">
+                            <img id="img-target-${id}" class="w-full h-48 object-cover">
                         </div>
                     </div>
-                    <div><label class="label-style">Isolation Step</label><textarea id="isolate-${id}" class="w-full border-2 p-3 rounded-xl text-sm validate" rows="2"></textarea></div>
-                    <div><label class="label-style">Verification</label><textarea id="verify-${id}" class="w-full border-2 p-3 rounded-xl text-sm validate" rows="2"></textarea></div>
-                    
-                    <div class="border-2 border-dashed rounded-2xl p-4 text-center bg-slate-50 cursor-pointer" onclick="document.getElementById('file-${id}').click()">
-                        <p class="text-red-600 font-bold text-xs uppercase">📸 Click to Take Photo</p>
-                        <input type="file" id="file-${id}" accept="image/*" capture="environment" class="hidden" onchange="processImage(this, ${id})">
-                        <div id="preview-${id}" class="mt-3 hidden"><img id="img-${id}" class="w-full h-40 object-cover rounded-lg"></div>
-                    </div>
-                </div>`;
+                </div>
+            `;
             document.getElementById('points-list').appendChild(card);
-            reindexAllSteps();
-        }
-
-        function processImage(input, id) {
-            const file = input.files[0];
-            if (file) {
-                const reader = new FileReader();
-                reader.onload = (e) => {
-                    const base64Data = e.target.result;
-                    imageDataStore[id] = base64Data; // Save to memory
-                    document.getElementById(`preview-${id}`).classList.remove('hidden');
-                    document.getElementById(`img-${id}`).src = base64Data;
-                };
-                reader.readAsDataURL(file);
-            }
         }
 
         function validateAndGenerate() {
-            let ok = true;
+            let isValid = true;
             document.querySelectorAll('.validate').forEach(el => {
-                if (!el.value.trim()) { el.classList.add('error-border'); ok = false; }
+                if (!el.value.trim()) { el.classList.add('error-border'); isValid = false; }
                 else { el.classList.remove('error-border'); }
             });
-            if (ok) generatePDF();
-            else alert("Fill all fields.");
+
+            if (isValid) {
+                generatePDF();
+            } else {
+                alert("Please fill in all required fields.");
+            }
         }
 
         async function generatePDF() {
@@ -170,36 +153,31 @@
             const doc = new jsPDF('p', 'mm', 'a4');
             const steps = document.querySelectorAll('.step-card');
             
-            // Header
-            doc.setFillColor(30, 41, 59); doc.rect(0, 0, 210, 20, 'F');
-            doc.setTextColor(255, 255, 255); doc.setFontSize(16); doc.text("LOTO PROCEDURE REPORT", 10, 13);
+            doc.setFontSize(18);
+            doc.text("LOTO SAFETY PROCEDURE", 10, 20);
+            doc.setFontSize(10);
+            doc.text(`ID: ${currentID} | Equipment: ${document.getElementById('description').value}`, 10, 28);
 
-            const tableData = [];
+            const tableRows = [];
             steps.forEach(card => {
                 const id = card.dataset.internalId;
-                const tag = document.getElementById(`tag-${id}`).value;
-                const method = document.getElementById(`isolate-${id}`).value;
-                const verify = document.getElementById(`verify-${id}`).value;
-                // Add the internal ID to the data array so the drawer can find the image
-                tableData.push([tag, method, "", verify, id]);
+                const energy = document.getElementById(`energy-${id}`).value;
+                const method = document.getElementById(`method-${id}`).value;
+                tableRows.push([energy, method, "", id]); // Empty string is placeholder for image
             });
 
             doc.autoTable({
-                startY: 30,
-                head: [['TAG', 'ISOLATION METHOD', 'VISUAL', 'VERIFICATION']],
-                body: tableData.map(r => r.slice(0, 4)),
-                styles: { minCellHeight: 40, verticalAlign: 'middle', fontSize: 8 },
-                columnStyles: { 2: { cellWidth: 50 } }, // Column for images
+                startY: 35,
+                head: [['Energy Source', 'Isolation Method', 'Visual Reference']],
+                body: tableRows.map(r => [r[0], r[1], ""]),
+                styles: { minCellHeight: 45, verticalAlign: 'middle' },
+                columnStyles: { 2: { cellWidth: 60 } },
                 didDrawCell: (data) => {
                     if (data.column.index === 2 && data.cell.section === 'body') {
-                        const internalId = tableData[data.row.index][4];
-                        const base64 = imageDataStore[internalId];
-                        if (base64) {
-                            try {
-                                doc.addImage(base64, 'JPEG', data.cell.x + 2, data.cell.y + 2, 46, 36);
-                            } catch (e) {
-                                console.error("Image draw error", e);
-                            }
+                        const stepId = tableRows[data.row.index][3];
+                        const imgData = imageDataStore.get(stepId.toString());
+                        if (imgData) {
+                            doc.addImage(imgData, 'JPEG', data.cell.x + 2, data.cell.y + 2, 56, 40);
                         }
                     }
                 }
@@ -208,6 +186,7 @@
             doc.save(`LOTO-${currentID}.pdf`);
         }
 
+        // Initialize
         window.onload = () => { updateID(); addNewPoint(); };
     </script>
 </body>
