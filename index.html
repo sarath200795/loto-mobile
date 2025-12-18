@@ -3,67 +3,83 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>LOTO Pro - Stable Enterprise v5.0</title>
+    <title>LOTO Pro - Industrial Edition</title>
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#b91c1c">
+    <meta name="apple-mobile-web-app-capable" content="yes">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrious/4.0.2/qrious.min.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap');
-        body { font-family: 'Inter', sans-serif; padding-bottom: 140px; background-color: #f8fafc; }
-        .label-style { font-size: 11px; font-weight: 800; color: #1e293b; text-transform: uppercase; margin-bottom: 6px; display: block; }
-        .multi-device-scroll { max-height: 250px; overflow-y: auto; border: 2px solid #cbd5e1; padding: 14px; border-radius: 12px; background: #ffffff; }
-        .sticky-bottom { position: fixed; bottom: 0; left: 0; right: 0; background: white; padding: 20px; z-index: 1000; display: flex; gap: 12px; box-shadow: 0 -10px 25px rgba(0,0,0,0.1); }
-        .step-card { border-left: 8px solid #e2e8f0; border-radius: 16px; background: white; padding: 24px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
-        .validate.error-border { border-color: #ef4444 !important; background-color: #fef2f2; }
+        body { font-family: 'Inter', sans-serif; -webkit-tap-highlight-color: transparent; padding-bottom: 140px; background-color: #f8fafc; }
+        .glass-header { background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px); border-bottom: 2px solid #e2e8f0; position: sticky; top: 0; z-index: 100; }
+        .label-style { font-size: 11px; font-weight: 800; color: #1e293b; text-transform: uppercase; margin-bottom: 6px; display: block; letter-spacing: 0.02em; }
+        .multi-device-scroll { max-height: 250px; overflow-y: auto; border: 2px solid #cbd5e1; padding: 12px; border-radius: 12px; background: #ffffff; }
+        .sticky-bottom { position: fixed; bottom: 0; left: 0; right: 0; background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(15px); padding: 20px; z-index: 1000; display: flex; gap: 12px; box-shadow: 0 -10px 25px -5px rgba(0, 0, 0, 0.1); }
+        .step-card { border-left-width: 8px; border-radius: 16px; transition: all 0.3s ease; }
+        .validate.error-border { border: 2.5px solid #ef4444 !important; background-color: #fff1f1; }
     </style>
 </head>
 <body>
-    <div class="p-4 max-w-lg mx-auto">
-        <header class="flex justify-between items-center mb-6 border-b pb-4">
-            <h1 class="text-2xl font-black text-slate-900 italic">LOTO<span class="text-red-600">PRO</span></h1>
-            <p id="displayID" class="text-xs font-mono font-bold text-red-600 bg-red-50 px-3 py-1.5 rounded border border-red-100 shadow-sm uppercase tracking-tighter">PENDING</p>
-        </header>
-
-        <div class="bg-white p-6 rounded-2xl border border-slate-200 mb-8 space-y-4 shadow-sm">
-            <div><label class="label-style">Facility Name</label><input type="text" id="facility" oninput="updateID()" class="w-full border-2 p-3 rounded-xl validate" placeholder="PLANT-A"></div>
-            <div><label class="label-style">Location</label><input type="text" id="location" oninput="updateID()" class="w-full border-2 p-3 rounded-xl validate" placeholder="SUBSTATION 04"></div>
-            <div><label class="label-style">Equipment</label><input type="text" id="description" oninput="updateID()" class="w-full border-2 p-3 rounded-xl validate" placeholder="BOILER PUMP"></div>
-            <div><label class="label-style">Date</label><input type="date" id="revisedDate" class="w-full border-2 p-3 rounded-xl validate"></div>
+    <div class="glass-header p-4 mb-6 shadow-sm">
+        <div class="max-w-lg mx-auto flex justify-between items-center">
+            <div>
+                <h1 class="text-2xl font-black text-slate-900 tracking-tighter italic">LOTO<span class="text-red-600">PRO</span></h1>
+                <p class="text-[9px] text-slate-400 font-bold uppercase tracking-widest">Enterprise Compliance Engine</p>
+            </div>
+            <div class="text-right">
+                <button onclick="if(confirm('Clear all data?')) location.reload()" class="text-[10px] font-bold text-slate-400 uppercase hover:text-red-600 mb-1 block transition">Reset</button>
+                <p id="displayID" class="text-xs font-mono font-bold text-red-600 bg-red-50 px-3 py-1.5 rounded-lg border border-red-100 shadow-sm">PENDING</p>
+            </div>
         </div>
+    </div>
 
+    <div class="p-4 max-w-lg mx-auto">
+        <div class="bg-white p-6 rounded-2xl shadow-md border border-slate-200 mb-8 space-y-4">
+            <h2 class="text-xs font-black text-slate-800 border-b-2 border-slate-100 pb-2 uppercase tracking-tight">Main Procedure Details</h2>
+            <div><label class="label-style">Facility Name</label><input type="text" id="facility" oninput="updateID()" class="w-full border-slate-300 border-2 p-3 rounded-xl validate focus:border-red-500 outline-none" placeholder="e.g. FACTORY-NORTH"></div>
+            <div class="grid grid-cols-2 gap-4">
+                <div><label class="label-style">Location</label><input type="text" id="location" oninput="updateID()" class="w-full border-slate-300 border-2 p-3 rounded-xl validate focus:border-red-500 outline-none" placeholder="e.g. SUB-01"></div>
+                <div><label class="label-style">Date</label><input type="date" id="revisedDate" class="w-full border-slate-300 border-2 p-3 rounded-xl validate focus:border-red-500 outline-none"></div>
+            </div>
+            <div><label class="label-style">Equipment Identification</label><input type="text" id="description" oninput="updateID()" class="w-full border-slate-300 border-2 p-3 rounded-xl validate focus:border-red-500 outline-none" placeholder="e.g. MAIN BOILER PUMP"></div>
+        </div>
         <div id="points-list" class="space-y-6"></div>
     </div>
 
     <div class="sticky-bottom">
-        <button onclick="addNewPoint()" class="flex-1 bg-slate-900 text-white font-black py-4 rounded-2xl shadow-lg active:scale-95 transition">+ STEP</button>
-        <button onclick="validateAndGenerate()" class="flex-1 bg-red-600 text-white font-black py-4 rounded-2xl shadow-lg active:scale-95 transition italic">GENERATE PDF</button>
+        <button onclick="addNewPoint()" class="flex-1 bg-slate-900 text-white font-black py-4 rounded-2xl shadow-xl active:scale-95 transition tracking-widest">+ ADD STEP</button>
+        <button onclick="validateAndGenerate()" class="flex-1 bg-red-600 text-white font-black py-4 rounded-2xl shadow-xl active:scale-95 transition tracking-widest italic">GENERATE PDF</button>
     </div>
 
     <script>
         let uniqueIdCounter = 0;
-        let imageDataStore = {}; 
+        let imageDataStore = {};
         let currentID = "";
 
         const energyConfig = {
-            "Electrical":     { code: "E",  bg: [185, 28, 28],  text: [255, 255, 255] },
-            "Mechanical":     { code: "M",  bg: [30, 64, 175],  text: [255, 255, 255] },
-            "Pneumatic":      { code: "P",  bg: [147, 51, 234], text: [255, 255, 255] },
-            "Hydraulic":      { code: "H",  bg: [194, 65, 12],  text: [255, 255, 255] },
-            "Steam":          { code: "S",  bg: [71, 85, 105],  text: [255, 255, 255] },
-            "Water":          { code: "W",  bg: [14, 165, 233], text: [255, 255, 255] },
-            "Thermal":        { code: "T",  bg: [249, 115, 22], text: [255, 255, 255] }
+            "Electrical": { code: "E", bg: [185, 28, 28], text: [255, 255, 255] },
+            "Mechanical": { code: "M", bg: [30, 64, 175], text: [255, 255, 255] },
+            "Compressed Air": { code: "CA", bg: [8, 145, 178], text: [255, 255, 255] },
+            "Radiation": { code: "R", bg: [234, 179, 8], text: [0, 0, 0] },
+            "Chemical": { code: "C", bg: [21, 128, 61], text: [255, 255, 255] },
+            "Hydraulic": { code: "H", bg: [194, 65, 12], text: [255, 255, 255] }
         };
 
-        const deviceOptions = ["Padlock", "Lockout Hasp", "Breaker Lock", "Ball Valve Lockout", "Gate Valve Lockout", "Cable Lockout", "Safety Tag"];
+        const deviceOptions = [
+            "Padlock (Personal)", "Steel Safety Hasp", "Standard Breaker Lockout", 
+            "Large 480V Breaker Lockout", "Wall Switch Lockout", "Plug Lockout Box", 
+            "Ball Valve Lockout", "Rotating Gate Valve Cover", "Butterfly Valve Lockout", 
+            "Cable Lockout (5m)", "Pneumatic Disconnect", "Group Lock Box", "Safety Tag"
+        ];
 
         function updateID() {
-            const f = (document.getElementById('facility').value || "FAC").substring(0,3).toUpperCase();
-            const l = (document.getElementById('location').value || "LOC").substring(0,3).toUpperCase();
-            const d = (document.getElementById('description').value || "DESC").substring(0,5).toUpperCase();
-            currentID = `${f}-${l}-${d}`;
+            const fac = document.getElementById('facility').value.trim().toUpperCase() || "FAC";
+            const loc = document.getElementById('location').value.trim().toUpperCase() || "LOC";
+            const desc = document.getElementById('description').value.trim().toUpperCase() || "DESC";
+            currentID = `${fac.replace(/\s+/g, '')}-${loc.replace(/\s+/g, '')}-${desc.substring(0,8).replace(/\s+/g, '')}`;
             document.getElementById('displayID').innerText = currentID;
         }
 
@@ -72,7 +88,7 @@
             const typeCounts = {};
             steps.forEach((card, index) => {
                 const id = card.dataset.internalId;
-                card.querySelector('.pt-num').innerText = `STEP #${index + 1}`;
+                card.querySelector('.point-num-label').innerText = `STEP #${index + 1}`;
                 const type = document.getElementById(`energy-type-${id}`).value;
                 if (type) {
                     const code = energyConfig[type].code;
@@ -89,26 +105,34 @@
             const card = document.createElement('div');
             card.id = `step-container-${id}`;
             card.dataset.internalId = id;
-            card.className = "step-card mb-4";
+            card.className = "step-card bg-white p-6 rounded-2xl shadow-lg border border-slate-200 mb-4";
             card.innerHTML = `
-                <div class="flex justify-between items-center mb-4 border-b pb-2">
-                    <span class="pt-num font-black text-slate-800 italic uppercase">STEP #${id}</span>
-                    <div class="flex items-center gap-2">
-                        <input type="text" id="tag-${id}" class="text-right font-mono font-bold text-red-600 bg-red-50 p-1 w-16 rounded" readonly>
-                        <button onclick="document.getElementById('step-container-${id}').remove();reindexAllSteps();" class="text-slate-300 font-bold hover:text-red-500">✕</button>
+                <div class="mb-4 flex justify-between items-center border-b-2 border-slate-50 pb-3">
+                    <span class="point-num-label text-slate-800 font-black text-sm uppercase italic">STEP #${id}</span>
+                    <div class="flex items-center gap-3">
+                        <input type="text" id="tag-${id}" class="text-right font-mono font-bold text-red-600 bg-red-50 p-1 w-16 rounded border border-red-100" readonly>
+                        <button onclick="document.getElementById('step-container-${id}').remove();reindexAllSteps();" class="text-slate-300 hover:text-red-600 transition text-2xl font-bold">&times;</button>
                     </div>
                 </div>
-                <div class="space-y-4">
-                    <select id="energy-type-${id}" onchange="reindexAllSteps()" class="w-full border-2 p-3 rounded-xl validate font-bold">
-                        <option value="">-- Energy Type --</option>${Object.keys(energyConfig).map(k => `<option value="${k}">${k}</option>`).join('')}
-                    </select>
-                    <div class="multi-device-scroll">${deviceOptions.map(o => `<label class="flex items-center mb-2"><input type="checkbox" class="device-checkbox-${id} mr-2"> <span class="text-xs font-bold text-slate-600 uppercase tracking-tighter">${o}</span></label>`).join('')}</div>
-                    <textarea id="isolate-${id}" class="w-full border-2 p-3 rounded-xl validate" rows="2" placeholder="Method of Isolation"></textarea>
-                    <textarea id="verify-${id}" class="w-full border-2 p-3 rounded-xl validate" rows="2" placeholder="Verification of Zero Energy"></textarea>
-                    <div class="bg-slate-50 border-2 border-dashed border-slate-300 rounded-2xl p-6 text-center cursor-pointer" onclick="document.getElementById('file-${id}').click()">
-                        <span class="text-red-600 font-black text-xs uppercase italic">📸 Capture Site Photo</span>
-                        <input type="file" id="file-${id}" accept="image/*" capture="environment" onchange="processImage(this, ${id})" class="hidden">
-                        <div id="preview-box-${id}" class="mt-3 hidden shadow-md rounded-xl overflow-hidden border-4 border-white"><img id="img-target-${id}" class="w-full h-48 object-cover"></div>
+                <div class="space-y-5">
+                    <div>
+                        <label class="label-style">Energy Source</label>
+                        <select id="energy-type-${id}" onchange="reindexAllSteps()" class="w-full border-2 border-slate-200 p-3 rounded-xl bg-slate-50 validate outline-none">
+                            <option value="">-- Select Type --</option>${Object.keys(energyConfig).map(k => `<option value="${k}">${k}</option>`).join('')}
+                        </select>
+                    </div>
+                    <div>
+                        <label class="label-style">Lockout Hardware Selection</label>
+                        <div class="multi-device-scroll">
+                            ${deviceOptions.map(o => `<label class="flex items-center mb-3 p-1 hover:bg-slate-100 rounded cursor-pointer transition"><input type="checkbox" class="device-checkbox-${id} w-5 h-5 text-red-600 mr-3 border-2 border-slate-300 rounded"> <span class="text-xs font-bold text-slate-600">${o}</span></label>`).join('')}
+                        </div>
+                    </div>
+                    <div><label class="label-style">Isolation Step</label><textarea id="isolate-${id}" class="w-full border-2 border-slate-200 p-3 rounded-xl text-sm validate outline-none" rows="2" placeholder="Action required to isolate energy..."></textarea></div>
+                    <div><label class="label-style">Verification Method</label><textarea id="verify-${id}" class="w-full border-2 border-slate-200 p-3 rounded-xl text-sm validate outline-none" rows="2" placeholder="How to confirm zero energy state..."></textarea></div>
+                    <div class="border-3 border-dashed border-slate-200 rounded-2xl p-6 text-center cursor-pointer hover:border-red-200 transition bg-slate-50" onclick="document.getElementById('file-${id}').click()">
+                        <p class="text-red-600 font-black text-xs uppercase italic">📸 Capture Site Photo</p>
+                        <input type="file" id="file-${id}" accept="image/*" capture="environment" onchange="previewFile(this, id)" class="hidden">
+                        <div id="preview-box-${id}" class="mt-3 hidden shadow-2xl rounded-xl overflow-hidden border-4 border-white"><img id="img-target-${id}" class="w-full h-48 object-cover"></div>
                     </div>
                 </div>`;
             document.getElementById('points-list').appendChild(card);
@@ -116,126 +140,17 @@
             window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
         }
 
-        function processImage(input, id) {
+        function previewFile(input, id) {
             const file = input.files[0];
             if (file) {
                 const reader = new FileReader();
                 reader.onload = (e) => {
-                    const img = new Image();
-                    img.onload = () => {
-                        const canvas = document.createElement('canvas');
-                        const MAX_WIDTH = 800;
-                        const scaleSize = MAX_WIDTH / img.width;
-                        canvas.width = MAX_WIDTH; canvas.height = img.height * scaleSize;
-                        const ctx = canvas.getContext('2d');
-                        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-                        imageDataStore[id] = canvas.toDataURL('image/jpeg', 0.7);
-                        document.getElementById(`img-target-${id}`).src = imageDataStore[id];
-                        document.getElementById(`preview-box-${id}`).classList.remove('hidden');
-                    };
-                    img.src = e.target.result;
+                    imageDataStore[id] = e.target.result;
+                    document.getElementById(`preview-box-${id}`).classList.remove('hidden');
+                    document.getElementById(`img-target-${id}`).src = e.target.result;
                 };
                 reader.readAsDataURL(file);
             }
-        }
-
-        async function generatePDF() {
-            const { jsPDF } = window.jspdf;
-            const doc = new jsPDF('p', 'mm', 'a4');
-            const qr = new QRious({ value: currentID, size: 250 });
-            const steps = document.querySelectorAll('.step-card');
-
-            // Analytics
-            const eCounts = {};
-            steps.forEach(card => {
-                const id = card.dataset.internalId;
-                const type = document.getElementById(`energy-type-${id}`).value;
-                if (type) eCounts[type] = (eCounts[type] || 0) + 1;
-            });
-            const energySummary = Object.entries(eCounts).map(([t, c]) => `${t}-${c.toString().padStart(2, '0')}`).join(', ');
-
-            // --- PAGE 1: HEADER & DYNAMIC INFO ---
-            doc.setFillColor(30, 41, 59); doc.rect(0, 0, 210, 22, 'F');
-            doc.setTextColor(255, 255, 255); doc.setFontSize(14); doc.setFont("helvetica", "bold");
-            doc.text("LOTO POSTED PROCEDURE - COMPLIANCE v5.0", 10, 14);
-            doc.addImage(qr.toDataURL(), 'PNG', 170, 2, 16, 16);
-
-            // BORDERED FIRST SECTION (FACILITY/SUMMARY)
-            doc.setDrawColor(0); doc.setLineWidth(0.4); 
-            doc.setFillColor(250, 250, 250); doc.rect(10, 28, 190, 45, 'FD'); 
-            
-            doc.setTextColor(0); doc.setFontSize(9);
-            doc.text(`ID#: ${currentID}`, 14, 35);
-            doc.text(`FACILITY: ${document.getElementById('facility').value.toUpperCase()}`, 14, 42);
-            doc.text(`LOCATION: ${document.getElementById('location').value.toUpperCase()}`, 14, 49);
-            doc.text(`EQUIPMENT: ${document.getElementById('description').value.toUpperCase()}`, 14, 56);
-            doc.text(`DATE: ${document.getElementById('revisedDate').value}`, 14, 63);
-
-            doc.text(`TOTAL SOURCES: ${steps.length}`, 120, 35);
-            const wrappedSummary = doc.splitTextToSize(`SUMMARY: ${energySummary}`, 70);
-            doc.text(wrappedSummary, 120, 42);
-
-            // ISOLATION TABLE
-            const tableBody = [];
-            steps.forEach(card => {
-                const id = card.dataset.internalId;
-                const devs = Array.from(document.querySelectorAll(`.device-checkbox-${id}:checked`)).map(c => c.parentElement.innerText.trim()).join(', ');
-                tableBody.push([document.getElementById(`tag-${id}`).value, devs, document.getElementById(`isolate-${id}`).value, "", document.getElementById(`verify-${id}`).value, id]);
-            });
-
-            doc.autoTable({
-                startY: 85, head: [['TAG', 'DEVICES', 'METHOD', 'VISUAL', 'VERIFY']], body: tableBody.map(r => r.slice(0, 5)),
-                theme: 'grid', styles: { minCellHeight: 45, verticalAlign: 'middle', fontSize: 7, lineWidth: 0.3 },
-                columnStyles: { 3: { cellWidth: 55 } },
-                didDrawCell: (d) => {
-                    if (d.column.index === 0 && d.cell.section === 'body') {
-                        const sid = tableBody[d.row.index][5];
-                        const type = document.getElementById(`energy-type-${sid}`).value;
-                        if(energyConfig[type]) {
-                            doc.setFillColor(...energyConfig[type].bg); doc.rect(d.cell.x+1, d.cell.y+1, d.cell.width-2, d.cell.height-2, 'F');
-                            doc.setTextColor(255,255,255); doc.text(d.cell.text, d.cell.x+d.cell.width/2, d.cell.y+d.cell.height/2, {align:'center', baseline:'middle'});
-                        }
-                    }
-                    if (d.column.index === 3 && d.cell.section === 'body') {
-                        const sid = tableBody[d.row.index][5];
-                        if (imageDataStore[sid]) doc.addImage(imageDataStore[sid], 'JPEG', d.cell.x+2, d.cell.y+2, 51, 41);
-                    }
-                }
-            });
-
-            // --- PAGE 2: SEQUENCES ---
-            doc.addPage();
-            doc.setFillColor(30, 41, 59); doc.rect(0, 0, 210, 20, 'F');
-            doc.setTextColor(255, 255, 255); doc.text("SHUTDOWN & RESTORATION SEQUENCES", 105, 13, { align: "center" });
-            doc.autoTable({
-                startY: 25, head: [['#','SHUTDOWN SEQUENCE','ACTION DESCRIPTION']],
-                body:[['1','Notify','Inform all affected employees.'],['2','Identify','Locate all energy sources.'],['3','Stop','Standard stopping procedure.'],['4','Isolate','Operate all energy disconnects.'],['5','Lockout','Apply individual locks and tags.'],['6','Release','Dissipate stored energy (pressure/springs).'],['7','Verify','Attempt restart then verify zero energy state.']],
-                theme:'grid', headStyles:{fillColor:[185,28,28]}
-            });
-            doc.autoTable({
-                startY: doc.lastAutoTable.finalY + 12, head: [['#','RESTORATION SEQUENCE','ACTION DESCRIPTION']],
-                body:[['1','Inspect','Remove tools and clear work area.'],['2','Area','Verify all personnel are safely clear.'],['3','Reset','Ensure controls are in Neutral/OFF.'],['4','Unlock','Remove all locks and tags personally.'],['5','Notify','Advise work is complete and equipment is ready.']],
-                theme:'grid', headStyles:{fillColor:[30, 64, 175]}
-            });
-
-            // --- PAGE 3: PHYSICAL TAGS ---
-            doc.addPage();
-            doc.text("COLOR-CODED ISOLATION TAGS (1\" x 2\")", 10, 15);
-            let cx = 15, cy = 25;
-            tableBody.forEach(row => {
-                const sid = row[5];
-                const type = document.getElementById(`energy-type-${sid}`).value;
-                const c = energyConfig[type] || {bg:[255,255,255], text:[0,0,0]};
-                doc.setFillColor(...c.bg); doc.rect(cx, cy, 50, 25, 'F');
-                doc.setDrawColor(0); doc.rect(cx, cy, 50, 25, 'D');
-                doc.setTextColor(...c.text); doc.setFontSize(18); doc.text(row[0], cx+4, cy+10);
-                doc.addImage(qr.toDataURL(), 'PNG', cx + 33, cy + 3, 14, 14);
-                doc.setFontSize(5); doc.text(`REF: ${currentID}`, cx+4, cy+18);
-                cx += 55; if (cx > 160) { cx = 15; cy += 30; }
-                if (cy > 260 && row !== tableBody[tableBody.length-1]) { doc.addPage(); cx = 15; cy = 25; }
-            });
-
-            doc.save(`${currentID}_STABLE_LOTO.pdf`);
         }
 
         function validateAndGenerate() {
@@ -244,11 +159,135 @@
                 if (!el.value.trim()) { el.classList.add('error-border'); ok = false; }
                 else { el.classList.remove('error-border'); }
             });
-            if (ok) generatePDF(); else alert("Incomplete Data.");
+            if (ok) generatePDF();
+            else alert("Incomplete procedure. Please fill all highlighted fields.");
         }
 
-        function resetApp() { if(confirm('Clear all fields?')) location.reload(); }
-        window.onload = () => { addNewPoint(); updateID(); };
+        async function generatePDF() {
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF('p', 'mm', 'a4');
+            const equip = document.getElementById('description').value;
+            const steps = document.querySelectorAll('.step-card');
+            const qr = new QRious({ value: currentID, size: 300 });
+
+            // Energy Analytics
+            const energyCounts = {};
+            steps.forEach(card => {
+                const id = card.dataset.internalId;
+                const type = document.getElementById(`energy-type-${id}`).value;
+                if (type) energyCounts[type] = (energyCounts[type] || 0) + 1;
+            });
+            const summaryString = Object.entries(energyCounts).map(([t, c]) => `${t}-${c.toString().padStart(2, '0')}`).join(', ');
+
+            // PAGE 1: HEADER BLOCK
+            doc.setFillColor(30, 41, 59); doc.rect(0, 0, 210, 22, 'F');
+            doc.setTextColor(255, 255, 255); doc.setFontSize(15); doc.setFont("helvetica", "bold");
+            doc.text("LOCKOUT / TAGOUT POSTED PROCEDURE", 10, 14);
+
+            doc.setDrawColor(0); doc.setLineWidth(0.4); 
+            doc.setFillColor(248, 250, 252); doc.rect(10, 28, 190, 36, 'FD'); 
+            
+            doc.setTextColor(30, 41, 59); doc.setFontSize(9);
+            doc.text(`PROCEDURE ID: ${currentID}`, 14, 36);
+            doc.text(`FACILITY: ${document.getElementById('facility').value}`, 14, 43);
+            doc.text(`LOCATION: ${document.getElementById('location').value}`, 14, 50);
+            doc.text(`EQUIPMENT: ${equip}`, 14, 57);
+            
+            doc.addImage(qr.toDataURL(), 'PNG', 168, 30, 28, 28);
+            doc.setFontSize(6); doc.text("REF CODE", 175, 60);
+
+            doc.setFontSize(9); doc.setFont("helvetica", "bold");
+            doc.text(`SOURCES: ${steps.length}`, 115, 36);
+            doc.text(`REVISION: ${document.getElementById('revisedDate').value}`, 115, 43);
+            doc.setFont("helvetica", "normal");
+            const wrapSummary = doc.splitTextToSize(`SUMMARY: ${summaryString}`, 50);
+            doc.text(wrapSummary, 115, 50);
+
+            // COMPLIANCE SECTION WITH BORDER
+            let ty = 70;
+            doc.setFillColor(241, 245, 249); doc.rect(10, ty, 190, 65, 'F');
+            doc.setDrawColor(30, 41, 59); doc.rect(10, ty, 190, 65, 'D');
+            
+            doc.setFontSize(9); doc.setFont("helvetica", "bold"); doc.setTextColor(185, 28, 28);
+            const comp = [
+                {t: "PURPOSE", p: "Establishes mandatory requirements for isolating hazardous energy whenever maintenance is performed."},
+                {t: "SCOPE", p: "Mandatory for all employees performing service where unexpected startup could occur."},
+                {t: "AUTHORIZATION", p: "Only employees trained and designated as 'Authorized' may execute this specific procedure."},
+                {t: "CORE PROCESS", p: "1. Notify 2. Identify 3. Shutdown 4. Isolate 5. Lock/Tag 6. Release Stored Energy 7. Verify Isolation."}
+            ];
+            ty += 7;
+            comp.forEach(s => {
+                doc.setFont("helvetica", "bold"); doc.text(s.t, 14, ty);
+                doc.setFont("helvetica", "normal"); doc.setTextColor(51, 65, 85); doc.setFontSize(8);
+                const lines = doc.splitTextToSize(s.p, 180); doc.text(lines, 14, ty + 4);
+                ty += (lines.length * 4) + 6;
+            });
+
+            // ISOLATION TABLE
+            const body = [];
+            steps.forEach(card => {
+                const id = card.dataset.internalId;
+                const devs = Array.from(document.querySelectorAll(`.device-checkbox-${id}:checked`)).map(c => c.parentElement.innerText.trim()).join(', ');
+                body.push([document.getElementById(`tag-${id}`).value, devs, document.getElementById(`isolate-${id}`).value, "", document.getElementById(`verify-${id}`).value, id]);
+            });
+
+            doc.autoTable({
+                startY: 142, head: [['TAG', 'HARDWARE', 'METHOD', 'VISUAL', 'VERIFY']], body: body.map(r => r.slice(0, 5)), theme: 'grid',
+                headStyles: { fillColor: [30, 41, 59], textColor: 255, fontSize: 8 },
+                styles: { fontSize: 7, minCellHeight: 45, verticalAlign: 'middle', lineWidth: 0.3, lineColor: 0 },
+                columnStyles: { 0: {cellWidth: 15, fontStyle: 'bold', halign: 'center'}, 1: {cellWidth: 32}, 3: {cellWidth: 55} },
+                didDrawCell: (d) => {
+                    if (d.column.index === 0 && d.cell.section === 'body') {
+                        const sid = body[d.row.index][5];
+                        const c = energyConfig[document.getElementById(`energy-type-${sid}`).value];
+                        if(c) { doc.setFillColor(...c.bg); doc.rect(d.cell.x+1, d.cell.y+1, d.cell.width-2, d.cell.height-2, 'F'); doc.setTextColor(...c.text); doc.text(d.cell.text, d.cell.x+d.cell.width/2, d.cell.y+d.cell.height/2, {align:'center', baseline:'middle'}); }
+                    }
+                    if (d.column.index === 3 && d.cell.section === 'body') {
+                        const sid = body[d.row.index][5];
+                        if (imageDataStore[sid]) doc.addImage(imageDataStore[sid], 'JPEG', d.cell.x+2, d.cell.y+2, 51, 38);
+                    }
+                }
+            });
+
+            // PAGE 2: SAFETY TABLES
+            doc.addPage();
+            doc.setFillColor(30, 41, 59); doc.rect(0, 0, 210, 20, 'F');
+            doc.setTextColor(255, 255, 255); doc.text("SAFETY SEQUENCES & RESTORATION", 105, 13, { align: "center" });
+            
+            doc.autoTable({
+                startY: 25, head: [['#','SHUTDOWN SEQUENCE','DESCRIPTION']],
+                body:[['1','Notify','Inform all affected employees of shutdown.'],['2','Identify','Locate all energy sources and potential hazards.'],['3','Shutdown','Shut down machine using standard procedures.'],['4','Isolate','Operate all energy isolating disconnects and valves.'],['5','Lockout','Apply individual safety locks and tags to each point.'],['6','Release','Relieve stored pressure/energy (springs, capacitors).'],['7','Verify','Attempt restart; confirm zero energy. Return to OFF.']],
+                theme:'grid', headStyles:{fillColor:[185,28,28]}, styles:{fontSize: 8.5, lineWidth: 0.3}
+            });
+
+            doc.autoTable({
+                startY: doc.lastAutoTable.finalY + 12, head: [['#','RESTORATION SEQUENCE','DESCRIPTION']],
+                body:[['1','Inspect','Remove all tools, parts, and debris from area.'],['2','Area','Verify all personnel are safely clear of the machine.'],['3','Reset','Ensure all machine controls are in Neutral/OFF.'],['4','Restore','Remove all locks and tags from isolating points.'],['5','Notify','Inform all affected associates work is complete.']],
+                theme:'grid', headStyles:{fillColor:[30, 64, 175]}, styles:{fontSize: 8.5, lineWidth: 0.3}
+            });
+
+            // PAGE 3: TAGS
+            doc.addPage();
+            doc.setFillColor(30, 41, 59); doc.rect(0, 0, 210, 20, 'F');
+            doc.setTextColor(255, 255, 255); doc.text("ISOLATION POINT TAGS (1\" x 2\")", 105, 13, { align: "center" });
+            let cx = 15, cy = 30;
+            body.forEach(row => {
+                const sid = row[5];
+                const c = energyConfig[document.getElementById(`energy-type-${sid}`).value] || {bg:[255,255,255], text:[0,0,0]};
+                doc.setFillColor(...c.bg); doc.rect(cx, cy, 50, 25, 'F');
+                doc.setDrawColor(0); doc.rect(cx, cy, 50, 25, 'D');
+                doc.setTextColor(...c.text); doc.setFontSize(18); doc.setFont("helvetica", "bold");
+                doc.text(row[0], cx + 4, cy + 12);
+                doc.addImage(qr.toDataURL(), 'PNG', cx + 33, cy + 3, 14, 14);
+                doc.setFontSize(5); doc.text(`REF: ${currentID}`, cx + 4, cy + 19);
+                doc.text(`EQ: ${equip.substring(0,25)}`, cx + 4, cy + 22);
+                cx += 55; if (cx > 160) { cx = 15; cy += 30; }
+                if (cy > 260 && row !== body[body.length-1]) { doc.addPage(); cx = 15; cy = 30; }
+            });
+
+            doc.save(`${currentID}_PRO_LOTO.pdf`);
+        }
+        window.onload = () => { updateID(); addNewPoint(); };
     </script>
 </body>
 </html>
