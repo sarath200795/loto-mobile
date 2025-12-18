@@ -11,22 +11,20 @@
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap');
         body { font-family: 'Inter', sans-serif; background-color: #f8fafc; padding-bottom: 120px; }
-        .glass-header { background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px); border-bottom: 2px solid #e2e8f0; position: sticky; top: 0; z-index: 100; }
         .label-style { font-size: 11px; font-weight: 800; color: #1e293b; text-transform: uppercase; margin-bottom: 6px; display: block; }
-        .step-card { border-left-width: 8px; border-radius: 16px; border-color: #e2e8f0; }
+        .step-card { border-left-width: 8px; border-radius: 16px; border-color: #e2e8f0; transition: all 0.3s ease; }
         .validate.error-border { border: 2.5px solid #ef4444 !important; background-color: #fff1f1; }
     </style>
 </head>
 <body>
-    <div class="glass-header p-4 mb-6 shadow-sm">
+    <div class="sticky top-0 bg-white/95 backdrop-blur-md p-4 mb-6 shadow-sm z-50 border-b">
         <div class="max-w-lg mx-auto flex justify-between items-center">
             <div>
                 <h1 class="text-2xl font-black text-slate-900 italic">LOTO<span class="text-red-600">PRO</span></h1>
-                <p class="text-[9px] text-slate-400 font-bold uppercase">Enterprise Compliance Engine</p>
             </div>
             <div class="text-right">
-                <button onclick="resetApp()" class="text-[10px] font-bold text-slate-400 uppercase hover:text-red-600 mb-1 block">Reset</button>
-                <p id="displayID" class="text-xs font-mono font-bold text-red-600 bg-red-50 px-3 py-1.5 rounded-lg border border-red-100">PENDING</p>
+                <button onclick="resetApp()" class="text-[10px] font-bold text-slate-400 uppercase hover:text-red-600">Reset</button>
+                <p id="displayID" class="text-xs font-mono font-bold text-red-600">PENDING</p>
             </div>
         </div>
     </div>
@@ -57,9 +55,8 @@
             "Electrical": { code: "E", bg: [185, 28, 28], text: [255, 255, 255] },
             "Mechanical": { code: "M", bg: [30, 64, 175], text: [255, 255, 255] },
             "Compressed Air": { code: "CA", bg: [8, 145, 178], text: [255, 255, 255] },
-            "Radiation": { code: "R", bg: [234, 179, 8], text: [0, 0, 0] },
-            "Chemical": { code: "C", bg: [21, 128, 61], text: [255, 255, 255] },
-            "Hydraulic": { code: "H", bg: [194, 65, 12], text: [255, 255, 255] }
+            "Hydraulic": { code: "H", bg: [194, 65, 12], text: [255, 255, 255] },
+            "Chemical": { code: "C", bg: [21, 128, 61], text: [255, 255, 255] }
         };
 
         function resetApp() {
@@ -86,7 +83,6 @@
             const typeCounts = {};
             steps.forEach((card, index) => {
                 const id = card.dataset.internalId;
-                card.querySelector('.point-num-label').innerText = `STEP #${index + 1}`;
                 const type = document.getElementById(`energy-type-${id}`).value;
                 if (type) {
                     const code = energyConfig[type].code;
@@ -106,11 +102,8 @@
             card.className = "step-card bg-white p-6 rounded-2xl shadow-lg border border-slate-200 mb-4";
             card.innerHTML = `
                 <div class="mb-4 flex justify-between items-center border-b pb-3">
-                    <span class="point-num-label text-slate-800 font-black text-sm uppercase italic">STEP #${id}</span>
-                    <div class="flex items-center gap-3">
-                        <input type="text" id="tag-${id}" class="text-right font-mono font-bold text-red-600 bg-red-50 p-1 w-16 rounded border border-red-100" readonly>
-                        <button onclick="document.getElementById('step-container-${id}').remove();reindexAllSteps();" class="text-slate-300 hover:text-red-600 transition text-xl font-bold">&times;</button>
-                    </div>
+                    <span class="point-num-label text-slate-800 font-black text-sm italic">STEP #${id}</span>
+                    <input type="text" id="tag-${id}" class="text-right font-mono font-bold text-red-600 bg-red-50 p-1 w-16 rounded border-none" readonly>
                 </div>
                 <div class="space-y-4">
                     <div>
@@ -119,12 +112,12 @@
                             <option value="">-- Select --</option>${Object.keys(energyConfig).map(k => `<option value="${k}">${k}</option>`).join('')}
                         </select>
                     </div>
-                    <div><label class="label-style">Isolation Step</label><textarea id="isolate-${id}" class="w-full border-2 p-3 rounded-xl text-sm validate outline-none" rows="2"></textarea></div>
+                    <div><label class="label-style">Isolation Method</label><textarea id="isolate-${id}" class="w-full border-2 p-3 rounded-xl text-sm validate outline-none" rows="2"></textarea></div>
                     <div><label class="label-style">Verification</label><textarea id="verify-${id}" class="w-full border-2 p-3 rounded-xl text-sm validate outline-none" rows="2"></textarea></div>
                     <div class="border-2 border-dashed border-slate-200 rounded-2xl p-4 text-center cursor-pointer bg-slate-50" onclick="document.getElementById('file-${id}').click()">
-                        <p class="text-red-600 font-black text-xs">📸 CAPTURE SITE PHOTO</p>
+                        <p class="text-red-600 font-black text-xs">📸 CAPTURE PHOTO</p>
                         <input type="file" id="file-${id}" accept="image/*" capture="environment" onchange="previewFile(this, ${id})" class="hidden">
-                        <div id="preview-box-${id}" class="mt-2 hidden border-2 border-white rounded-lg overflow-hidden shadow-sm"><img id="img-target-${id}" class="w-full h-32 object-cover"></div>
+                        <div id="preview-box-${id}" class="mt-2 hidden"><img id="img-target-${id}" class="w-full h-32 object-cover rounded-lg shadow-sm"></div>
                     </div>
                 </div>`;
             document.getElementById('points-list').appendChild(card);
@@ -151,7 +144,7 @@
                 else { el.classList.remove('error-border'); }
             });
             if (ok) generatePDF();
-            else alert("Please complete all required fields.");
+            else alert("Please fill all required fields.");
         }
 
         async function generatePDF() {
@@ -162,31 +155,42 @@
             const steps = document.querySelectorAll('.step-card');
             const qrData = new QRious({ value: currentID, size: 300 }).toDataURL();
 
-            // PAGE 1: Procedure Details & Table
+            // Analytics logic for Section 1
+            const energyCounts = {};
+            steps.forEach(card => {
+                const id = card.dataset.internalId;
+                const type = document.getElementById(`energy-type-${id}`).value;
+                if (type) energyCounts[type] = (energyCounts[type] || 0) + 1;
+            });
+            const summaryString = Object.entries(energyCounts).map(([k,v]) => `${k}(${v})`).join(', ');
+
+            // PAGE 1: HEADER & TABLE
             doc.setFillColor(30, 41, 59); doc.rect(0, 0, 210, 22, 'F');
             doc.setTextColor(255, 255, 255); doc.setFontSize(16); doc.text("LOTO POSTED PROCEDURE", 10, 14);
 
-            doc.setFillColor(248, 250, 252); doc.rect(10, 28, 190, 36, 'FD'); 
+            doc.setFillColor(248, 250, 252); doc.rect(10, 28, 190, 40, 'FD'); 
             doc.setTextColor(30, 41, 59); doc.setFontSize(9);
             doc.text(`ID: ${currentID}`, 14, 36);
-            doc.text(`FACILITY: ${document.getElementById('facility').value}`, 14, 43);
-            doc.text(`EQUIPMENT: ${equip}`, 14, 57);
+            doc.text(`EQUIPMENT: ${equip}`, 14, 43);
+            doc.text(`LOCATION: ${loc}`, 14, 50);
+            
+            // Energy Source Data in Section 1
+            doc.setFont("helvetica", "bold");
+            doc.text(`TOTAL SOURCES: ${steps.length}`, 115, 36);
+            doc.setFont("helvetica", "normal");
+            const wrapSummary = doc.splitTextToSize(`ENERGY TYPES: ${summaryString}`, 60);
+            doc.text(wrapSummary, 115, 43);
+            
             doc.addImage(qrData, 'PNG', 170, 32, 25, 25);
 
             const tableRows = [];
             steps.forEach(card => {
                 const id = card.dataset.internalId;
-                tableRows.push([
-                    document.getElementById(`tag-${id}`).value, 
-                    document.getElementById(`isolate-${id}`).value, 
-                    "", 
-                    document.getElementById(`verify-${id}`).value, 
-                    id
-                ]);
+                tableRows.push([document.getElementById(`tag-${id}`).value, document.getElementById(`isolate-${id}`).value, "", document.getElementById(`verify-${id}`).value, id]);
             });
 
             doc.autoTable({
-                startY: 70,
+                startY: 75,
                 head: [['TAG', 'ISOLATION METHOD', 'VISUAL', 'VERIFICATION']],
                 body: tableRows.map(r => r.slice(0, 4)),
                 styles: { fontSize: 7, minCellHeight: 40, verticalAlign: 'middle' },
@@ -199,7 +203,7 @@
                 }
             });
 
-            // PAGE 2: SEQUENCES (FROM UPLOADED FILES)
+            // PAGE 2: SEQUENCES
             doc.addPage();
             doc.setFillColor(30, 41, 59); doc.rect(0, 0, 210, 15, 'F');
             doc.setTextColor(255, 255, 255); doc.setFontSize(12); doc.text("SHUTDOWN, LOCK, TAG & TEST SEQUENCE", 105, 10, { align: "center" });
@@ -214,10 +218,9 @@
                     ['4', 'Isolate Energy', 'Follow graphical procedure to de-activate energy isolating device(s)...'],
                     ['5', 'Lockout Energy', 'Lock out & tag out the energy isolating device(s) with individual locks...'],
                     ['6', 'Dissipate Energy', 'Residual energy (capacitors, springs, pressure) must be dissipated or restrained...'],
-                    ['7', 'Attempt Restart', 'Verify isolation by operating push button or controls. Return to off position.']
+                    ['7', 'Attempt Restart', 'Verify isolation by operating push button or controls.']
                 ],
-                headStyles: { fillColor: [185, 28, 28] },
-                styles: { fontSize: 8 }
+                headStyles: { fillColor: [185, 28, 28] }, styles: { fontSize: 8 }
             });
 
             doc.setFillColor(30, 41, 59); doc.rect(0, doc.lastAutoTable.finalY + 10, 210, 15, 'F');
@@ -229,19 +232,15 @@
                 body: [
                     ['1', 'Check Machine', 'Ensure nonessential items have been removed and components are intact...'],
                     ['2', 'Check Area', 'Ensure all employees have been safely positioned or removed from the area...'],
-                    ['3', 'Verify Machine', 'Verify that the controls are in neutral...'],
+                    ['3', 'Verify Machine', 'Verify that the controls are in neutral.'],
                     ['4', 'Remove Lockout', 'Remove locks, tags and devices. Re-energize in reverse order...'],
-                    ['5', 'Notify Employees', 'Notify affected employees that servicing is completed and ready for use...']
+                    ['5', 'Notify Employees', 'Notify affected employees that servicing is completed.']
                 ],
-                headStyles: { fillColor: [30, 64, 175] },
-                styles: { fontSize: 8 }
+                headStyles: { fillColor: [30, 64, 175] }, styles: { fontSize: 8 }
             });
 
-            // PAGE 3: PHYSICAL TAGS
+            // PAGE 3: TAGS
             doc.addPage();
-            doc.setFillColor(30, 41, 59); doc.rect(0, 0, 210, 20, 'F');
-            doc.setTextColor(255, 255, 255); doc.setFontSize(14); doc.text("ISOLATION POINT IDENTIFICATION TAGS", 105, 13, { align: "center" });
-
             let cx = 15, cy = 30;
             tableRows.forEach((row) => {
                 const sid = row[4];
@@ -251,15 +250,12 @@
 
                 doc.setDrawColor(0); doc.setFillColor(255, 255, 255); doc.rect(cx, cy, 60, 35, 'FD');
                 doc.setFillColor(...config.bg); doc.rect(cx, cy, 35, 12, 'F');
-                doc.setTextColor(...config.text); doc.setFontSize(16); doc.setFont("helvetica", "bold");
+                doc.setTextColor(...config.text); doc.setFontSize(14); doc.setFont("helvetica", "bold");
                 doc.text(tagNum, cx + 17.5, cy + 8.5, { align: 'center' });
 
-                doc.setTextColor(30, 41, 59); doc.setFontSize(7); doc.setFont("helvetica", "bold");
-                doc.text("EQUIPMENT:", cx + 2, cy + 18);
-                doc.setFont("helvetica", "normal"); doc.text(equip.substring(0, 22), cx + 2, cy + 21);
-                doc.setFont("helvetica", "bold"); doc.text("LOCATION:", cx + 2, cy + 26);
-                doc.setFont("helvetica", "normal"); doc.text(loc.substring(0, 22), cx + 2, cy + 29);
-                doc.setFontSize(5); doc.setTextColor(150, 150, 150); doc.text(`REF: ${currentID}`, cx + 2, cy + 33);
+                doc.setTextColor(30, 41, 59); doc.setFontSize(7);
+                doc.text(`EQ: ${equip.substring(0, 22)}`, cx + 2, cy + 18);
+                doc.text(`LOC: ${loc.substring(0, 22)}`, cx + 2, cy + 24);
                 doc.addImage(qrData, 'PNG', cx + 38, cy + 4, 18, 18);
 
                 cx += 65;
@@ -267,7 +263,7 @@
                 if (cy > 240) { doc.addPage(); cx = 15; cy = 30; }
             });
 
-            doc.save(`${currentID}_LOTO_PROCEDURE.pdf`);
+            doc.save(`${currentID}_LOTO.pdf`);
         }
         window.onload = () => { updateID(); addNewPoint(); };
     </script>
