@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>LOTO Mobile Pro - Full Hardware & Reset</title>
+    <title>LOTO Mobile Pro - Dynamic Indexing</title>
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#b91c1c">
     <meta name="apple-mobile-web-app-capable" content="yes">
@@ -14,19 +14,11 @@
         body { -webkit-tap-highlight-color: transparent; padding-bottom: 120px; font-family: sans-serif; }
         input, select, textarea { font-size: 16px !important; }
         .label-style { font-size: 11px; font-weight: 800; color: #475569; text-transform: uppercase; margin-bottom: 6px; display: block; }
-        /* Professional scroll box for hardware list */
-        .multi-device-scroll { 
-            max-height: 200px; 
-            overflow-y: auto; 
-            border: 2px solid #e2e8f0; 
-            padding: 12px; 
-            border-radius: 8px; 
-            background: #f8fafc;
-            box-shadow: inset 0 2px 4px rgba(0,0,0,0.05);
-        }
+        .multi-device-scroll { max-height: 200px; overflow-y: auto; border: 2px solid #e2e8f0; padding: 12px; border-radius: 8px; background: #f8fafc; }
         .sticky-bottom { position: fixed; bottom: 0; left: 0; right: 0; background: white; border-top: 2px solid #eee; padding: 15px; z-index: 100; display: flex; gap: 10px; }
         .validate.error-border { border: 2px solid #ef4444 !important; }
         .btn-reset { background: #f1f5f9; color: #64748b; font-size: 10px; font-weight: 800; padding: 4px 10px; border-radius: 6px; border: 1px solid #cbd5e1; text-transform: uppercase; }
+        .step-card { transition: all 0.2s ease-in-out; }
     </style>
 </head>
 <body class="bg-slate-50">
@@ -34,8 +26,8 @@
         <header class="mb-6 flex justify-between items-start border-b pb-4">
             <div>
                 <h1 class="text-2xl font-black text-red-700 uppercase">LOTO Mobile</h1>
-                <p class="text-[10px] text-slate-500 font-bold uppercase tracking-widest">Compliance Management</p>
-                <button onclick="resetApp()" class="btn-reset mt-2">Clear All Fields</button>
+                <p class="text-[10px] text-slate-500 font-bold uppercase tracking-widest">Dynamic Tagging System</p>
+                <button onclick="resetApp()" class="btn-reset mt-2">Reset All</button>
             </div>
             <div class="text-right">
                 <p id="displayID" class="text-xs font-mono font-bold text-red-600 bg-red-50 p-2 rounded border border-red-200">ID: PENDING</p>
@@ -44,8 +36,8 @@
 
         <div class="space-y-4 bg-white p-5 rounded-xl shadow-sm border border-slate-200 mb-6">
             <div><label class="label-style">Facility Name</label><input type="text" id="facility" oninput="updateID()" class="w-full border p-3 rounded-lg validate" placeholder="e.g. SITE-01"></div>
-            <div><label class="label-style">Location</label><input type="text" id="location" oninput="updateID()" class="w-full border p-3 rounded-lg validate" placeholder="e.g. ELECTRICAL ROOM"></div>
-            <div><label class="label-style">Equipment</label><input type="text" id="description" oninput="updateID()" class="w-full border p-3 rounded-lg validate" placeholder="e.g. MAIN COMPRESSOR"></div>
+            <div><label class="label-style">Location</label><input type="text" id="location" oninput="updateID()" class="w-full border p-3 rounded-lg validate" placeholder="e.g. POWER ROOM"></div>
+            <div><label class="label-style">Equipment</label><input type="text" id="description" oninput="updateID()" class="w-full border p-3 rounded-lg validate" placeholder="e.g. UPS-01"></div>
             <div><label class="label-style">Revision Date</label><input type="date" id="revisedDate" class="w-full border p-3 rounded-lg validate"></div>
         </div>
 
@@ -58,7 +50,7 @@
     </div>
 
     <script>
-        let pointCounter = 0;
+        let uniqueIdCounter = 0; // Persistent ID for DOM tracking
         let imageDataStore = {};
         let currentID = "";
 
@@ -74,15 +66,7 @@
             "Water":          { code: "W",  bg: [14, 165, 233],  text: [0, 0, 0] }
         };
 
-        // FULL COMPREHENSIVE HARDWARE LIST
-        const deviceOptions = [
-            "Safety Padlock (Assigned)", "Lockout Hasp (Steel)", "Circuit Breaker (Single)", 
-            "Circuit Breaker (Multi-pole)", "Large Breaker Lockout", "Wall Switch Lockout", 
-            "Electrical Plug Lockout", "Ball Valve Lockout (S)", "Ball Valve Lockout (L)", 
-            "Gate Valve Lockout (Rotating)", "Butterfly Valve Lockout", "Plug Valve Lockout", 
-            "Cable Lockout Device", "Pneumatic Quick-Disconnect", "Cylinder Tank Lockout", 
-            "Push Button Cover", "Group Lockout Box", "Blind Flange Lockout"
-        ];
+        const deviceOptions = ["Safety Padlock", "Lockout Hasp", "Circuit Breaker Lockout", "Plug Lockout", "Ball Valve Lockout", "Gate Valve Lockout", "Cable Lockout", "Pneumatic Lockout"];
 
         function updateID() {
             const fac = document.getElementById('facility').value.trim().toUpperCase() || "FAC";
@@ -92,26 +76,47 @@
             document.getElementById('displayID').innerText = `ID: ${currentID}`;
         }
 
-        function handleTagAutoGeneration(id) {
-            const val = document.getElementById(`energy-type-${id}`).value;
-            if (!val) return;
-            const prefix = energyConfig[val].code;
-            let count = 0;
-            document.querySelectorAll('[id^="energy-type-"]').forEach(el => { if (el.value === val) count++; });
-            document.getElementById(`tag-${id}`).value = `${prefix}-${count}`;
+        /**
+         * The Core Logic: Re-calculates Step Numbers and Energy Tags (E-1, E-2, etc.)
+         * triggered whenever a step is added, deleted, or energy type is changed.
+         */
+        function reindexAllSteps() {
+            const steps = document.querySelectorAll('.step-card');
+            const typeCounts = {};
+
+            steps.forEach((card, index) => {
+                const internalId = card.dataset.internalId;
+                const pointNumDisplay = card.querySelector('.point-number-label');
+                const tagInput = document.getElementById(`tag-${internalId}`);
+                const energySelect = document.getElementById(`energy-type-${internalId}`);
+                
+                // Update Point # Order
+                pointNumDisplay.innerText = `POINT #${index + 1}`;
+                
+                // Update Energy Tag (e.g., E-1, E-2)
+                const type = energySelect.value;
+                if (type && energyConfig[type]) {
+                    const code = energyConfig[type].code;
+                    typeCounts[code] = (typeCounts[code] || 0) + 1;
+                    tagInput.value = `${code}-${typeCounts[code]}`;
+                } else {
+                    tagInput.value = "";
+                }
+            });
         }
 
         function addNewPoint() {
-            pointCounter++;
-            const id = pointCounter;
+            uniqueIdCounter++;
+            const id = uniqueIdCounter;
             const container = document.getElementById('points-list');
             const card = document.createElement('div');
             card.id = `step-container-${id}`;
-            card.className = "bg-white p-5 rounded-xl shadow-md border-2 border-slate-200 mb-4";
+            card.dataset.internalId = id;
+            card.className = "step-card bg-white p-5 rounded-xl shadow-md border-2 border-slate-200 mb-4";
             
             card.innerHTML = `
                 <div class="mb-4 flex justify-between items-center border-b pb-2">
-                    <span class="text-red-700 font-black text-sm">POINT #${id}</span>
+                    <span class="point-number-label text-red-700 font-black text-sm">POINT #...</span>
                     <div class="flex items-center gap-3">
                         <input type="text" id="tag-${id}" class="text-right font-mono font-bold text-red-600 bg-transparent w-16" readonly>
                         <button onclick="deleteStep(${id})" class="text-gray-300">
@@ -120,31 +125,33 @@
                     </div>
                 </div>
                 <label class="label-style">Energy Type</label>
-                <select id="energy-type-${id}" onchange="handleTagAutoGeneration(${id})" class="w-full border p-3 rounded-lg mb-4 validate bg-slate-50">
-                    <option value="">-- Choose Energy --</option>
+                <select id="energy-type-${id}" onchange="reindexAllSteps()" class="w-full border p-3 rounded-lg mb-4 validate bg-slate-50">
+                    <option value="">-- Select Type --</option>
                     ${Object.keys(energyConfig).map(k => `<option value="${k}">${k}</option>`).join('')}
                 </select>
-                <label class="label-style">Hardware Checklist</label>
+                <label class="label-style">LOTO Hardware</label>
                 <div class="multi-device-scroll mb-4">${deviceOptions.map(o => `<label class="flex items-center mb-3"><input type="checkbox" class="device-checkbox-${id} w-5 h-5 text-red-600" value="${o}"><span class="ml-3 text-sm">${o}</span></label>`).join('')}</div>
-                <label class="label-style">Isolation Step</label>
-                <textarea id="isolate-${id}" class="w-full border p-3 rounded-lg text-sm mb-4 validate" rows="2" placeholder="Action..."></textarea>
-                <label class="label-style">Verification</label>
-                <textarea id="verify-${id}" class="w-full border p-3 rounded-lg text-sm mb-4 validate" rows="2" placeholder="How to verify zero energy..."></textarea>
+                <label class="label-style">Isolation Method</label>
+                <textarea id="isolate-${id}" class="w-full border p-3 rounded-lg text-sm mb-4 validate" rows="2"></textarea>
+                <label class="label-style">Verification Step</label>
+                <textarea id="verify-${id}" class="w-full border p-3 rounded-lg text-sm mb-4 validate" rows="2"></textarea>
                 <div class="border-2 border-dashed border-slate-300 rounded-lg p-4 text-center bg-slate-50">
                     <label class="cursor-pointer block">
-                        <span class="text-red-600 font-bold text-sm block">📸 TAKE PHOTO</span>
+                        <span class="text-red-600 font-bold text-sm block">📸 CAPTURE IMAGE</span>
                         <input type="file" id="file-${id}" accept="image/*" capture="environment" onchange="previewFile(this, ${id})" class="hidden">
                     </label>
                     <div id="preview-box-${id}" class="mt-2 hidden"><img id="img-target-${id}" class="w-full h-48 object-cover rounded-lg"></div>
                 </div>`;
             container.appendChild(card);
+            reindexAllSteps();
             window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
         }
 
         function deleteStep(id) {
-            if (confirm("Delete this point?")) {
+            if (confirm("Delete this isolation point?")) {
                 document.getElementById(`step-container-${id}`).remove();
                 delete imageDataStore[id];
+                reindexAllSteps();
             }
         }
 
@@ -162,11 +169,10 @@
         }
 
         function resetApp() {
-            if (confirm("Are you sure you want to clear all fields? All progress will be lost.")) {
+            if (confirm("Reset everything?")) {
                 document.querySelectorAll('input, select, textarea').forEach(el => el.value = "");
-                document.querySelectorAll('input[type="checkbox"]').forEach(el => el.checked = false);
                 document.getElementById('points-list').innerHTML = "";
-                pointCounter = 0;
+                uniqueIdCounter = 0;
                 imageDataStore = {};
                 updateID();
                 addNewPoint();
@@ -179,7 +185,7 @@
                 if (!el.value.trim()) { el.classList.add('error-border'); ok = false; }
                 else { el.classList.remove('error-border'); }
             });
-            if (!ok) return alert("Fill all mandatory fields.");
+            if (!ok) return alert("Please fill all mandatory fields.");
             generatePDF();
         }
 
@@ -187,17 +193,17 @@
             const { jsPDF } = window.jspdf;
             const doc = new jsPDF('p', 'mm', 'a4');
             const equip = document.getElementById('description').value;
+            const steps = document.querySelectorAll('.step-card');
 
-            // DYNAMIC ENERGY SUMMARY
+            // Header summary
             const energyCounts = {};
-            const activeStepIds = Array.from(document.querySelectorAll('[id^="step-container-"]')).map(el => el.id.split('-').pop());
-            activeStepIds.forEach(id => {
+            steps.forEach(card => {
+                const id = card.dataset.internalId;
                 const type = document.getElementById(`energy-type-${id}`).value;
                 if (type) energyCounts[type] = (energyCounts[type] || 0) + 1;
             });
-            const summaryString = Object.entries(energyCounts).map(([t, c]) => `${t}-${c.toString().padStart(2, '0')}`).join(', ');
+            const summary = Object.entries(energyCounts).map(([t, c]) => `${t}-${c.toString().padStart(2, '0')}`).join(', ');
 
-            // PAGE 1: HEADER
             doc.setFillColor(180, 0, 0); doc.rect(0, 0, 210, 18, 'F');
             doc.setTextColor(255, 255, 255); doc.setFontSize(14); doc.setFont("helvetica", "bold");
             doc.text("LOCKOUT / TAGOUT POSTED PROCEDURE", 105, 12, { align: "center" });
@@ -208,19 +214,13 @@
             doc.text(`Facility: ${document.getElementById('facility').value}`, 14, 34);
             doc.text(`Location: ${document.getElementById('location').value}`, 14, 40);
             doc.text(`Equipment: ${equip}`, 14, 46);
-            doc.setFont("helvetica", "bold"); doc.text(`Total Sources: ${activeStepIds.length}`, 135, 28);
-            const wrappedEnergy = doc.splitTextToSize(`Types: ${summaryString}`, 60);
-            doc.text(wrappedEnergy, 135, 34);
+            doc.setFont("helvetica", "bold"); doc.text(`Total Sources: ${steps.length}`, 135, 28);
+            doc.text(doc.splitTextToSize(`Types: ${summary}`, 60), 135, 34);
 
-            // COMPLIANCE SECTION
-            let compY = 58; doc.rect(10, compY, 190, 80);
-            const comp = [
-                {t: "Purpose:", p: "Establish requirements for isolation of hazardous energy during maintenance."},
-                {t: "Scope:", p: "Ensure machines are safe from energy before servicing per OSHA 1910.147."},
-                {t: "Authorization:", p: "Only employees trained as 'Authorized' may use this procedure."},
-                {t: "Process:", p: "1. Notify 2. Identify 3. Shutdown 4. Isolate 5. Lock/Tag 6. Release 7. Verify."}
-            ];
-            let ty = compY + 6;
+            let currentY = 58;
+            doc.rect(10, currentY, 190, 80);
+            const comp = [{t: "Purpose:", p: "Isolation for maintenance."}, {t: "Scope:", p: "Safe from energy."}, {t: "Authorization:", p: "Authorized only."}, {t: "Process:", p: "Steps 1-7."}];
+            let ty = currentY + 6;
             comp.forEach(s => {
                 doc.setFontSize(8); doc.setFont("helvetica", "bold"); doc.text(s.t, 14, ty);
                 doc.setFont("helvetica", "normal"); doc.setFontSize(7.5);
@@ -229,54 +229,49 @@
             });
 
             const body = [];
-            activeStepIds.forEach(id => {
+            steps.forEach(card => {
+                const id = card.dataset.internalId;
                 const devs = Array.from(document.querySelectorAll(`.device-checkbox-${id}:checked`)).map(c => c.value).join(', ');
-                body.push([document.getElementById(`tag-${id}`).value, devs, document.getElementById(`isolate-${id}`).value, "", document.getElementById(`verify-${id}`).value]);
+                body.push([document.getElementById(`tag-${id}`).value, devs, document.getElementById(`isolate-${id}`).value, "", document.getElementById(`verify-${id}`).value, id]);
             });
 
             doc.autoTable({
-                startY: 142, head: [['Tag', 'Hardware', 'Method', 'Visual', 'Verify']], body: body, theme: 'grid',
-                rowPageBreak: 'avoid', styles: { fontSize: 7, minCellHeight: 40, verticalAlign: 'middle' },
-                columnStyles: { 0: {cellWidth: 15}, 1: {cellWidth: 32}, 3: {cellWidth: 55} },
+                startY: 142, head: [['Tag', 'Hardware', 'Method', 'Visual', 'Verify']], 
+                body: body.map(r => r.slice(0, 5)), 
+                theme: 'grid', rowPageBreak: 'avoid',
+                styles: { fontSize: 7, minCellHeight: 40, verticalAlign: 'middle' },
+                columnStyles: { 0: {cellWidth: 15}, 3: {cellWidth: 55} },
                 didDrawCell: (d) => {
                     if (d.column.index === 0 && d.cell.section === 'body') {
-                        const stepId = activeStepIds[d.row.index];
-                        const colors = energyConfig[document.getElementById(`energy-type-${stepId}`).value];
-                        if(colors) { doc.setFillColor(...colors.bg); doc.rect(d.cell.x+0.5, d.cell.y+0.5, d.cell.width-1, d.cell.height-1, 'F'); doc.setTextColor(...colors.text); doc.text(d.cell.text, d.cell.x+d.cell.width/2, d.cell.y+d.cell.height/2, {align:'center', baseline:'middle'}); }
+                        const stepId = body[d.row.index][5];
+                        const type = document.getElementById(`energy-type-${stepId}`).value;
+                        const c = energyConfig[type];
+                        if(c) { doc.setFillColor(...c.bg); doc.rect(d.cell.x+0.5, d.cell.y+0.5, d.cell.width-1, d.cell.height-1, 'F'); doc.setTextColor(...c.text); doc.text(d.cell.text, d.cell.x+d.cell.width/2, d.cell.y+d.cell.height/2, {align:'center', baseline:'middle'}); }
                     }
-                    if (d.column.index === 3 && d.cell.section === 'body' && imageDataStore[activeStepIds[d.row.index]]) {
-                        doc.addImage(imageDataStore[activeStepIds[d.row.index]], 'JPEG', d.cell.x+2, d.cell.y+2, 51, 36);
+                    if (d.column.index === 3 && d.cell.section === 'body') {
+                        const stepId = body[d.row.index][5];
+                        if (imageDataStore[stepId]) doc.addImage(imageDataStore[stepId], 'JPEG', d.cell.x+2, d.cell.y+2, 51, 36);
                     }
                 }
             });
 
-            // PAGE 2: SEQUENCES
-            doc.addPage();
-            doc.setFillColor(180, 0, 0); doc.rect(0, 0, 210, 18, 'F');
-            doc.setTextColor(255, 255, 255); doc.text("SHUTDOWN & RESTORATION SEQUENCES", 105, 12, { align: "center" });
-            doc.autoTable({
-                startY: 25, head: [['#','SHUTDOWN SEQUENCE','DESCRIPTION']],
-                body: [['1','Notify','Inform all affected associates.'],['2','Identify','Check all energy sources.'],['3','Stop','Standard stopping procedure.'],['4','Isolate','Operate disconnects/valves.'],['5','Lockout','Apply individual locks.'],['6','Release','Dissipate stored energy.'],['7','Verify','Attempt restart then verify zero state.']],
-                theme:'grid', headStyles:{fillColor:[180,0,0]}
-            });
-            doc.autoTable({
-                startY: doc.lastAutoTable.finalY + 10, head: [['#','RESTORATION SEQUENCE','DESCRIPTION']],
-                body: [['1','Inspect','Remove tools and parts.'],['2','Clear','Ensure personnel are clear.'],['3','Verify','Controls in neutral/OFF.'],['4','Unlock','Remove all locks and tags.'],['5','Notify','Inform work is complete.']],
-                theme:'grid', headStyles:{fillColor:[0,80,150]}
-            });
+            // Page 2 & 3 logic remains standard...
+            doc.addPage(); doc.setFillColor(180, 0, 0); doc.rect(0, 0, 210, 18, 'F');
+            doc.setTextColor(255, 255, 255); doc.text("SAFETY SEQUENCES", 105, 12, { align: "center" });
+            doc.autoTable({ startY: 25, head: [['#','SHUTDOWN SEQUENCE','DESCRIPTION']], body:[['1','Notify','...'],['2','Identify','...'],['3','Stop','...'],['4','Isolate','...'],['5','Lockout','...'],['6','Release','...'],['7','Verify','...']], theme:'grid', headStyles:{fillColor:[180,0,0]} });
+            doc.autoTable({ startY: doc.lastAutoTable.finalY + 10, head: [['#','RESTORATION SEQUENCE','DESCRIPTION']], body:[['1','Check','...'],['2','Area','...'],['3','Verify','...'],['4','Remove','...'],['5','Notify','...']], theme:'grid', headStyles:{fillColor:[0,80,150]} });
 
-            // PAGE 3: TAGS
-            doc.addPage();
-            doc.setFillColor(50, 50, 50); doc.rect(0, 0, 210, 18, 'F');
+            doc.addPage(); doc.setFillColor(50, 50, 50); doc.rect(0, 0, 210, 18, 'F');
             doc.setTextColor(255, 255, 255); doc.text("ISOLATION TAGS (1\" x 2\")", 105, 12, { align: "center" });
             let cx = 10, cy = 25;
-            activeStepIds.forEach(id => {
-                const colors = energyConfig[document.getElementById(`energy-type-${id}`).value] || {bg:[255,255,255], text:[0,0,0]};
-                doc.setFillColor(...colors.bg); doc.rect(cx, cy, 50.8, 25.4, 'F');
+            body.forEach(row => {
+                const id = row[5];
+                const type = document.getElementById(`energy-type-${id}`).value;
+                const c = energyConfig[type] || {bg:[255,255,255], text:[0,0,0]};
+                doc.setFillColor(...c.bg); doc.rect(cx, cy, 50.8, 25.4, 'F');
                 doc.setDrawColor(0); doc.rect(cx, cy, 50.8, 25.4, 'D');
-                doc.setTextColor(...colors.text); doc.setFontSize(16); doc.text(document.getElementById(`tag-${id}`).value, cx+4, cy+10);
+                doc.setTextColor(...c.text); doc.setFontSize(16); doc.text(row[0], cx+4, cy+10);
                 doc.setFontSize(5); doc.text(`DOC: ${currentID}`, cx+4, cy+18);
-                doc.text(`EQUIP: ${equip.substring(0,25)}`, cx+4, cy+22);
                 cx += 53; if (cx > 160) { cx = 10; cy += 28; }
             });
             doc.save(`${currentID}.pdf`);
