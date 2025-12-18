@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>LOTO Mobile Pro - Delete & Multi-Page Fix</title>
+    <title>LOTO Mobile Pro - Full Hardware & Reset</title>
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#b91c1c">
     <meta name="apple-mobile-web-app-capable" content="yes">
@@ -14,19 +14,28 @@
         body { -webkit-tap-highlight-color: transparent; padding-bottom: 120px; font-family: sans-serif; }
         input, select, textarea { font-size: 16px !important; }
         .label-style { font-size: 11px; font-weight: 800; color: #475569; text-transform: uppercase; margin-bottom: 6px; display: block; }
-        .multi-device-scroll { max-height: 180px; overflow-y: auto; border: 2px solid #e2e8f0; padding: 12px; border-radius: 8px; background: #f8fafc; }
+        /* Professional scroll box for hardware list */
+        .multi-device-scroll { 
+            max-height: 200px; 
+            overflow-y: auto; 
+            border: 2px solid #e2e8f0; 
+            padding: 12px; 
+            border-radius: 8px; 
+            background: #f8fafc;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.05);
+        }
         .sticky-bottom { position: fixed; bottom: 0; left: 0; right: 0; background: white; border-top: 2px solid #eee; padding: 15px; z-index: 100; display: flex; gap: 10px; }
         .validate.error-border { border: 2px solid #ef4444 !important; }
-        .step-card { animation: slideIn 0.3s ease-out; }
-        @keyframes slideIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .btn-reset { background: #f1f5f9; color: #64748b; font-size: 10px; font-weight: 800; padding: 4px 10px; border-radius: 6px; border: 1px solid #cbd5e1; text-transform: uppercase; }
     </style>
 </head>
 <body class="bg-slate-50">
     <div class="p-4 max-w-lg mx-auto">
-        <header class="mb-6 flex justify-between items-center border-b pb-4">
+        <header class="mb-6 flex justify-between items-start border-b pb-4">
             <div>
                 <h1 class="text-2xl font-black text-red-700 uppercase">LOTO Mobile</h1>
-                <p class="text-[10px] text-slate-500 font-bold uppercase tracking-widest">Multi-Step Stable System</p>
+                <p class="text-[10px] text-slate-500 font-bold uppercase tracking-widest">Compliance Management</p>
+                <button onclick="resetApp()" class="btn-reset mt-2">Clear All Fields</button>
             </div>
             <div class="text-right">
                 <p id="displayID" class="text-xs font-mono font-bold text-red-600 bg-red-50 p-2 rounded border border-red-200">ID: PENDING</p>
@@ -35,8 +44,8 @@
 
         <div class="space-y-4 bg-white p-5 rounded-xl shadow-sm border border-slate-200 mb-6">
             <div><label class="label-style">Facility Name</label><input type="text" id="facility" oninput="updateID()" class="w-full border p-3 rounded-lg validate" placeholder="e.g. SITE-01"></div>
-            <div><label class="label-style">Location</label><input type="text" id="location" oninput="updateID()" class="w-full border p-3 rounded-lg validate" placeholder="e.g. UPS ROOM"></div>
-            <div><label class="label-style">Equipment</label><input type="text" id="description" oninput="updateID()" class="w-full border p-3 rounded-lg validate" placeholder="e.g. MAIN CHILLER"></div>
+            <div><label class="label-style">Location</label><input type="text" id="location" oninput="updateID()" class="w-full border p-3 rounded-lg validate" placeholder="e.g. ELECTRICAL ROOM"></div>
+            <div><label class="label-style">Equipment</label><input type="text" id="description" oninput="updateID()" class="w-full border p-3 rounded-lg validate" placeholder="e.g. MAIN COMPRESSOR"></div>
             <div><label class="label-style">Revision Date</label><input type="date" id="revisedDate" class="w-full border p-3 rounded-lg validate"></div>
         </div>
 
@@ -65,13 +74,21 @@
             "Water":          { code: "W",  bg: [14, 165, 233],  text: [0, 0, 0] }
         };
 
-        const deviceOptions = ["Circuit Breaker Lockout", "Plug Lockout", "Gate Valve Lockout", "Ball Valve Lockout", "Cable Lockout", "Pneumatic Lockout"];
+        // FULL COMPREHENSIVE HARDWARE LIST
+        const deviceOptions = [
+            "Safety Padlock (Assigned)", "Lockout Hasp (Steel)", "Circuit Breaker (Single)", 
+            "Circuit Breaker (Multi-pole)", "Large Breaker Lockout", "Wall Switch Lockout", 
+            "Electrical Plug Lockout", "Ball Valve Lockout (S)", "Ball Valve Lockout (L)", 
+            "Gate Valve Lockout (Rotating)", "Butterfly Valve Lockout", "Plug Valve Lockout", 
+            "Cable Lockout Device", "Pneumatic Quick-Disconnect", "Cylinder Tank Lockout", 
+            "Push Button Cover", "Group Lockout Box", "Blind Flange Lockout"
+        ];
 
         function updateID() {
             const fac = document.getElementById('facility').value.trim().toUpperCase() || "FAC";
             const loc = document.getElementById('location').value.trim().toUpperCase() || "LOC";
             const desc = document.getElementById('description').value.trim().toUpperCase() || "DESC";
-            currentID = `${fac.replace(/\s+/g, '')}-${loc.replace(/\s+/g, '')}-${desc.substring(0,6).replace(/\s+/g, '')}`;
+            currentID = `${fac.replace(/\s+/g, '')}-${loc.replace(/\s+/g, '')}-${desc.substring(0,8).replace(/\s+/g, '')}`;
             document.getElementById('displayID').innerText = `ID: ${currentID}`;
         }
 
@@ -80,8 +97,7 @@
             if (!val) return;
             const prefix = energyConfig[val].code;
             let count = 0;
-            // Count only points that have the same energy type selected
-            document.querySelectorAll('[id^="energy-type-"]').forEach((el) => { if (el.value === val) count++; });
+            document.querySelectorAll('[id^="energy-type-"]').forEach(el => { if (el.value === val) count++; });
             document.getElementById(`tag-${id}`).value = `${prefix}-${count}`;
         }
 
@@ -91,29 +107,29 @@
             const container = document.getElementById('points-list');
             const card = document.createElement('div');
             card.id = `step-container-${id}`;
-            card.className = "step-card bg-white p-5 rounded-xl shadow-md border-2 border-slate-200 relative mb-4";
+            card.className = "bg-white p-5 rounded-xl shadow-md border-2 border-slate-200 mb-4";
             
             card.innerHTML = `
                 <div class="mb-4 flex justify-between items-center border-b pb-2">
-                    <span class="text-red-700 font-black text-sm uppercase tracking-tighter">Point #${id}</span>
-                    <div class="flex items-center gap-4">
+                    <span class="text-red-700 font-black text-sm">POINT #${id}</span>
+                    <div class="flex items-center gap-3">
                         <input type="text" id="tag-${id}" class="text-right font-mono font-bold text-red-600 bg-transparent w-16" readonly>
-                        <button onclick="deleteStep(${id})" class="text-gray-400 hover:text-red-600 transition">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                            </svg>
+                        <button onclick="deleteStep(${id})" class="text-gray-300">
+                             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
                         </button>
                     </div>
                 </div>
-                <label class="label-style">Energy Source</label>
+                <label class="label-style">Energy Type</label>
                 <select id="energy-type-${id}" onchange="handleTagAutoGeneration(${id})" class="w-full border p-3 rounded-lg mb-4 validate bg-slate-50">
-                    <option value="">-- Choose Type --</option>
+                    <option value="">-- Choose Energy --</option>
                     ${Object.keys(energyConfig).map(k => `<option value="${k}">${k}</option>`).join('')}
                 </select>
-                <label class="label-style">Lockout Hardware</label>
-                <div class="multi-device-scroll mb-4">${deviceOptions.map(o => `<label class="flex items-center mb-2"><input type="checkbox" class="device-checkbox-${id} mr-2" value="${o}"><span class="text-sm">${o}</span></label>`).join('')}</div>
-                <textarea id="isolate-${id}" class="w-full border p-3 rounded-lg text-sm mb-4 validate" rows="2" placeholder="Describe Isolation Step..."></textarea>
-                <textarea id="verify-${id}" class="w-full border p-3 rounded-lg text-sm mb-4 validate" rows="2" placeholder="Describe Verification..."></textarea>
+                <label class="label-style">Hardware Checklist</label>
+                <div class="multi-device-scroll mb-4">${deviceOptions.map(o => `<label class="flex items-center mb-3"><input type="checkbox" class="device-checkbox-${id} w-5 h-5 text-red-600" value="${o}"><span class="ml-3 text-sm">${o}</span></label>`).join('')}</div>
+                <label class="label-style">Isolation Step</label>
+                <textarea id="isolate-${id}" class="w-full border p-3 rounded-lg text-sm mb-4 validate" rows="2" placeholder="Action..."></textarea>
+                <label class="label-style">Verification</label>
+                <textarea id="verify-${id}" class="w-full border p-3 rounded-lg text-sm mb-4 validate" rows="2" placeholder="How to verify zero energy..."></textarea>
                 <div class="border-2 border-dashed border-slate-300 rounded-lg p-4 text-center bg-slate-50">
                     <label class="cursor-pointer block">
                         <span class="text-red-600 font-bold text-sm block">📸 TAKE PHOTO</span>
@@ -126,11 +142,9 @@
         }
 
         function deleteStep(id) {
-            if (confirm("Remove this isolation point?")) {
-                const element = document.getElementById(`step-container-${id}`);
-                element.remove();
+            if (confirm("Delete this point?")) {
+                document.getElementById(`step-container-${id}`).remove();
                 delete imageDataStore[id];
-                // Note: We don't reset the counter to keep IDs unique during the session
             }
         }
 
@@ -147,17 +161,25 @@
             }
         }
 
+        function resetApp() {
+            if (confirm("Are you sure you want to clear all fields? All progress will be lost.")) {
+                document.querySelectorAll('input, select, textarea').forEach(el => el.value = "");
+                document.querySelectorAll('input[type="checkbox"]').forEach(el => el.checked = false);
+                document.getElementById('points-list').innerHTML = "";
+                pointCounter = 0;
+                imageDataStore = {};
+                updateID();
+                addNewPoint();
+            }
+        }
+
         function validateAndGenerate() {
             let ok = true;
             document.querySelectorAll('.validate').forEach(el => {
                 if (!el.value.trim()) { el.classList.add('error-border'); ok = false; }
                 else { el.classList.remove('error-border'); }
             });
-            if (document.querySelectorAll('[id^="step-container-"]').length === 0) {
-                alert("Please add at least one isolation point.");
-                return;
-            }
-            if (!ok) return alert("Please fill all mandatory fields.");
+            if (!ok) return alert("Fill all mandatory fields.");
             generatePDF();
         }
 
@@ -166,10 +188,9 @@
             const doc = new jsPDF('p', 'mm', 'a4');
             const equip = document.getElementById('description').value;
 
-            // 1. DYNAMIC SUMMARY LOGIC
+            // DYNAMIC ENERGY SUMMARY
             const energyCounts = {};
             const activeStepIds = Array.from(document.querySelectorAll('[id^="step-container-"]')).map(el => el.id.split('-').pop());
-            
             activeStepIds.forEach(id => {
                 const type = document.getElementById(`energy-type-${id}`).value;
                 if (type) energyCounts[type] = (energyCounts[type] || 0) + 1;
@@ -192,8 +213,7 @@
             doc.text(wrappedEnergy, 135, 34);
 
             // COMPLIANCE SECTION
-            let compY = 58;
-            doc.rect(10, compY, 190, 80);
+            let compY = 58; doc.rect(10, compY, 190, 80);
             const comp = [
                 {t: "Purpose:", p: "Establish requirements for isolation of hazardous energy during maintenance."},
                 {t: "Scope:", p: "Ensure machines are safe from energy before servicing per OSHA 1910.147."},
@@ -208,43 +228,24 @@
                 ty += (lines.length * 4) + 6;
             });
 
-            // TABLE GENERATION
-            const tableBody = [];
+            const body = [];
             activeStepIds.forEach(id => {
                 const devs = Array.from(document.querySelectorAll(`.device-checkbox-${id}:checked`)).map(c => c.value).join(', ');
-                tableBody.push([
-                    document.getElementById(`tag-${id}`).value,
-                    devs,
-                    document.getElementById(`isolate-${id}`).value,
-                    "", 
-                    document.getElementById(`verify-${id}`).value,
-                    id // Hidden index for image mapping
-                ]);
+                body.push([document.getElementById(`tag-${id}`).value, devs, document.getElementById(`isolate-${id}`).value, "", document.getElementById(`verify-${id}`).value]);
             });
 
             doc.autoTable({
-                startY: 142,
-                head: [['Tag', 'Devices', 'Method', 'Visual', 'Verify']],
-                body: tableBody.map(row => row.slice(0, 5)),
-                theme: 'grid',
-                rowPageBreak: 'avoid',
-                styles: { fontSize: 7, minCellHeight: 40, verticalAlign: 'middle' },
-                columnStyles: { 0: {cellWidth: 15}, 1: {cellWidth: 32}, 2: {cellWidth: 39}, 3: {cellWidth: 58} },
+                startY: 142, head: [['Tag', 'Hardware', 'Method', 'Visual', 'Verify']], body: body, theme: 'grid',
+                rowPageBreak: 'avoid', styles: { fontSize: 7, minCellHeight: 40, verticalAlign: 'middle' },
+                columnStyles: { 0: {cellWidth: 15}, 1: {cellWidth: 32}, 3: {cellWidth: 55} },
                 didDrawCell: (d) => {
                     if (d.column.index === 0 && d.cell.section === 'body') {
                         const stepId = activeStepIds[d.row.index];
-                        const type = document.getElementById(`energy-type-${stepId}`).value;
-                        const c = energyConfig[type];
-                        if(c) {
-                            doc.setFillColor(...c.bg); doc.rect(d.cell.x+0.5, d.cell.y+0.5, d.cell.width-1, d.cell.height-1, 'F');
-                            doc.setTextColor(...c.text); doc.text(d.cell.text, d.cell.x+d.cell.width/2, d.cell.y+d.cell.height/2, {align:'center', baseline:'middle'});
-                        }
+                        const colors = energyConfig[document.getElementById(`energy-type-${stepId}`).value];
+                        if(colors) { doc.setFillColor(...colors.bg); doc.rect(d.cell.x+0.5, d.cell.y+0.5, d.cell.width-1, d.cell.height-1, 'F'); doc.setTextColor(...colors.text); doc.text(d.cell.text, d.cell.x+d.cell.width/2, d.cell.y+d.cell.height/2, {align:'center', baseline:'middle'}); }
                     }
-                    if (d.column.index === 3 && d.cell.section === 'body') {
-                        const stepId = activeStepIds[d.row.index];
-                        if (imageDataStore[stepId]) {
-                            doc.addImage(imageDataStore[stepId], 'JPEG', d.cell.x+2, d.cell.y+2, 54, 36);
-                        }
+                    if (d.column.index === 3 && d.cell.section === 'body' && imageDataStore[activeStepIds[d.row.index]]) {
+                        doc.addImage(imageDataStore[activeStepIds[d.row.index]], 'JPEG', d.cell.x+2, d.cell.y+2, 51, 36);
                     }
                 }
             });
@@ -255,32 +256,30 @@
             doc.setTextColor(255, 255, 255); doc.text("SHUTDOWN & RESTORATION SEQUENCES", 105, 12, { align: "center" });
             doc.autoTable({
                 startY: 25, head: [['#','SHUTDOWN SEQUENCE','DESCRIPTION']],
-                body: [['1','Notify','Inform all affected associates.'],['2','Identify','Check energy sources.'],['3','Stop','Standard stop procedure.'],['4','Isolate','Operate disconnects.'],['5','Lockout','Apply individual locks.'],['6','Stored','Release pressure/energy.'],['7','Verify','Attempt restart then OFF.']],
+                body: [['1','Notify','Inform all affected associates.'],['2','Identify','Check all energy sources.'],['3','Stop','Standard stopping procedure.'],['4','Isolate','Operate disconnects/valves.'],['5','Lockout','Apply individual locks.'],['6','Release','Dissipate stored energy.'],['7','Verify','Attempt restart then verify zero state.']],
                 theme:'grid', headStyles:{fillColor:[180,0,0]}
             });
             doc.autoTable({
-                startY: doc.lastAutoTable.finalY+10, head: [['#','RESTORATION SEQUENCE','DESCRIPTION']],
-                body: [['1','Check','Remove tools/parts.'],['2','Area','Clear personnel.'],['3','Verify','Controls in neutral.'],['4','Restore','Remove locks/tags.'],['5','Notify','Inform work complete.']],
+                startY: doc.lastAutoTable.finalY + 10, head: [['#','RESTORATION SEQUENCE','DESCRIPTION']],
+                body: [['1','Inspect','Remove tools and parts.'],['2','Clear','Ensure personnel are clear.'],['3','Verify','Controls in neutral/OFF.'],['4','Unlock','Remove all locks and tags.'],['5','Notify','Inform work is complete.']],
                 theme:'grid', headStyles:{fillColor:[0,80,150]}
             });
 
             // PAGE 3: TAGS
             doc.addPage();
             doc.setFillColor(50, 50, 50); doc.rect(0, 0, 210, 18, 'F');
-            doc.setTextColor(255, 255, 255); doc.text("POINT TAGS (1\" x 2\")", 105, 12, { align: "center" });
+            doc.setTextColor(255, 255, 255); doc.text("ISOLATION TAGS (1\" x 2\")", 105, 12, { align: "center" });
             let cx = 10, cy = 25;
             activeStepIds.forEach(id => {
-                const type = document.getElementById(`energy-type-${id}`).value;
-                const c = energyConfig[type] || {bg:[255,255,255], text:[0,0,0]};
-                doc.setFillColor(...c.bg); doc.rect(cx, cy, 50.8, 25.4, 'F');
+                const colors = energyConfig[document.getElementById(`energy-type-${id}`).value] || {bg:[255,255,255], text:[0,0,0]};
+                doc.setFillColor(...colors.bg); doc.rect(cx, cy, 50.8, 25.4, 'F');
                 doc.setDrawColor(0); doc.rect(cx, cy, 50.8, 25.4, 'D');
-                doc.setTextColor(...c.text); doc.setFontSize(16); doc.text(document.getElementById(`tag-${id}`).value, cx+4, cy+12);
+                doc.setTextColor(...colors.text); doc.setFontSize(16); doc.text(document.getElementById(`tag-${id}`).value, cx+4, cy+10);
                 doc.setFontSize(5); doc.text(`DOC: ${currentID}`, cx+4, cy+18);
+                doc.text(`EQUIP: ${equip.substring(0,25)}`, cx+4, cy+22);
                 cx += 53; if (cx > 160) { cx = 10; cy += 28; }
             });
-
-            doc.save(`${currentID}_LOTO.pdf`);
-            // Remove auto-reset to allow user to see result
+            doc.save(`${currentID}.pdf`);
         }
         window.onload = () => { updateID(); addNewPoint(); };
     </script>
