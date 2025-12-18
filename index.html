@@ -30,7 +30,7 @@
                 <p class="text-[9px] text-slate-400 font-bold uppercase tracking-widest">Enterprise Compliance Engine</p>
             </div>
             <div class="text-right">
-                <button onclick="if(confirm('Clear all data?')) location.reload()" class="text-[10px] font-bold text-slate-400 uppercase hover:text-red-600 mb-1 block transition">Reset</button>
+                <button onclick="resetApp()" class="text-[10px] font-bold text-slate-400 uppercase hover:text-red-600 mb-1 block transition">Reset</button>
                 <p id="displayID" class="text-xs font-mono font-bold text-red-600 bg-red-50 px-3 py-1.5 rounded-lg border border-red-100 shadow-sm">PENDING</p>
             </div>
         </div>
@@ -56,7 +56,7 @@
 
     <script>
         let uniqueIdCounter = 0;
-        let imageDataStore = {};
+        let imageDataStore = {}; // Stores Base64 images indexed by ID
         let currentID = "";
 
         const energyConfig = {
@@ -74,6 +74,17 @@
             "Ball Valve Lockout", "Rotating Gate Valve Cover", "Butterfly Valve Lockout", 
             "Cable Lockout (5m)", "Pneumatic Disconnect", "Group Lock Box", "Safety Tag"
         ];
+
+        function resetApp() {
+            if(confirm('Warning: This will clear all entered data and photos. Continue?')) {
+                document.getElementById('points-list').innerHTML = '';
+                document.querySelectorAll('input').forEach(i => i.value = '');
+                imageDataStore = {};
+                uniqueIdCounter = 0;
+                updateID();
+                addNewPoint();
+            }
+        }
 
         function updateID() {
             const fac = document.getElementById('facility').value.trim().toUpperCase() || "FAC";
@@ -131,7 +142,7 @@
                     <div><label class="label-style">Verification Method</label><textarea id="verify-${id}" class="w-full border-2 border-slate-200 p-3 rounded-xl text-sm validate outline-none" rows="2" placeholder="How to confirm zero energy state..."></textarea></div>
                     <div class="border-3 border-dashed border-slate-200 rounded-2xl p-6 text-center cursor-pointer hover:border-red-200 transition bg-slate-50" onclick="document.getElementById('file-${id}').click()">
                         <p class="text-red-600 font-black text-xs uppercase italic">📸 Capture Site Photo</p>
-                        <input type="file" id="file-${id}" accept="image/*" capture="environment" onchange="previewFile(this, id)" class="hidden">
+                        <input type="file" id="file-${id}" accept="image/*" capture="environment" onchange="previewFile(this, ${id})" class="hidden">
                         <div id="preview-box-${id}" class="mt-3 hidden shadow-2xl rounded-xl overflow-hidden border-4 border-white"><img id="img-target-${id}" class="w-full h-48 object-cover"></div>
                     </div>
                 </div>`;
@@ -140,14 +151,14 @@
             window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
         }
 
-        function previewFile(input, id) {
+        function previewFile(input, numericId) {
             const file = input.files[0];
             if (file) {
                 const reader = new FileReader();
                 reader.onload = (e) => {
-                    imageDataStore[id] = e.target.result;
-                    document.getElementById(`preview-box-${id}`).classList.remove('hidden');
-                    document.getElementById(`img-target-${id}`).src = e.target.result;
+                    imageDataStore[numericId] = e.target.result;
+                    document.getElementById(`preview-box-${numericId}`).classList.remove('hidden');
+                    document.getElementById(`img-target-${numericId}`).src = e.target.result;
                 };
                 reader.readAsDataURL(file);
             }
@@ -203,7 +214,7 @@
             const wrapSummary = doc.splitTextToSize(`SUMMARY: ${summaryString}`, 50);
             doc.text(wrapSummary, 115, 50);
 
-            // COMPLIANCE SECTION WITH BORDER
+            // COMPLIANCE SECTION
             let ty = 70;
             doc.setFillColor(241, 245, 249); doc.rect(10, ty, 190, 65, 'F');
             doc.setDrawColor(30, 41, 59); doc.rect(10, ty, 190, 65, 'D');
@@ -228,11 +239,21 @@
             steps.forEach(card => {
                 const id = card.dataset.internalId;
                 const devs = Array.from(document.querySelectorAll(`.device-checkbox-${id}:checked`)).map(c => c.parentElement.innerText.trim()).join(', ');
-                body.push([document.getElementById(`tag-${id}`).value, devs, document.getElementById(`isolate-${id}`).value, "", document.getElementById(`verify-${id}`).value, id]);
+                body.push([
+                    document.getElementById(`tag-${id}`).value, 
+                    devs, 
+                    document.getElementById(`isolate-${id}`).value, 
+                    "", // Visual Placeholder
+                    document.getElementById(`verify-${id}`).value, 
+                    id // ID index
+                ]);
             });
 
             doc.autoTable({
-                startY: 142, head: [['TAG', 'HARDWARE', 'METHOD', 'VISUAL', 'VERIFY']], body: body.map(r => r.slice(0, 5)), theme: 'grid',
+                startY: 142, 
+                head: [['TAG', 'HARDWARE', 'METHOD', 'VISUAL', 'VERIFY']], 
+                body: body.map(r => r.slice(0, 5)), 
+                theme: 'grid',
                 headStyles: { fillColor: [30, 41, 59], textColor: 255, fontSize: 8 },
                 styles: { fontSize: 7, minCellHeight: 45, verticalAlign: 'middle', lineWidth: 0.3, lineColor: 0 },
                 columnStyles: { 0: {cellWidth: 15, fontStyle: 'bold', halign: 'center'}, 1: {cellWidth: 32}, 3: {cellWidth: 55} },
@@ -240,11 +261,16 @@
                     if (d.column.index === 0 && d.cell.section === 'body') {
                         const sid = body[d.row.index][5];
                         const c = energyConfig[document.getElementById(`energy-type-${sid}`).value];
-                        if(c) { doc.setFillColor(...c.bg); doc.rect(d.cell.x+1, d.cell.y+1, d.cell.width-2, d.cell.height-2, 'F'); doc.setTextColor(...c.text); doc.text(d.cell.text, d.cell.x+d.cell.width/2, d.cell.y+d.cell.height/2, {align:'center', baseline:'middle'}); }
+                        if(c) { 
+                            doc.setFillColor(...c.bg); doc.rect(d.cell.x+1, d.cell.y+1, d.cell.width-2, d.cell.height-2, 'F'); 
+                            doc.setTextColor(...c.text); doc.text(d.cell.text, d.cell.x+d.cell.width/2, d.cell.y+d.cell.height/2, {align:'center', baseline:'middle'}); 
+                        }
                     }
                     if (d.column.index === 3 && d.cell.section === 'body') {
                         const sid = body[d.row.index][5];
-                        if (imageDataStore[sid]) doc.addImage(imageDataStore[sid], 'JPEG', d.cell.x+2, d.cell.y+2, 51, 38);
+                        if (imageDataStore[sid]) {
+                            doc.addImage(imageDataStore[sid], 'JPEG', d.cell.x+2, d.cell.y+2, 51, 38);
+                        }
                     }
                 }
             });
