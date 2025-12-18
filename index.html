@@ -12,7 +12,7 @@
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap');
         body { font-family: 'Inter', sans-serif; background-color: #f8fafc; padding-bottom: 120px; }
         .label-style { font-size: 11px; font-weight: 800; color: #1e293b; text-transform: uppercase; margin-bottom: 6px; display: block; }
-        .step-card { border-left-width: 8px; border-radius: 16px; border-color: #e2e8f0; transition: all 0.3s ease; }
+        .step-card { border-left-width: 8px; border-radius: 16px; border-color: #e2e8f0; }
         .validate.error-border { border: 2.5px solid #ef4444 !important; background-color: #fff1f1; }
     </style>
 </head>
@@ -51,12 +51,17 @@
         let imageDataStore = {}; 
         let currentID = "";
 
+        // Expanded Energy Sources List
         const energyConfig = {
             "Electrical": { code: "E", bg: [185, 28, 28], text: [255, 255, 255] },
             "Mechanical": { code: "M", bg: [30, 64, 175], text: [255, 255, 255] },
             "Compressed Air": { code: "CA", bg: [8, 145, 178], text: [255, 255, 255] },
             "Hydraulic": { code: "H", bg: [194, 65, 12], text: [255, 255, 255] },
-            "Chemical": { code: "C", bg: [21, 128, 61], text: [255, 255, 255] }
+            "Chemical": { code: "C", bg: [21, 128, 61], text: [255, 255, 255] },
+            "Thermal/Steam": { code: "T", bg: [234, 88, 12], text: [255, 255, 255] },
+            "Radiation": { code: "R", bg: [234, 179, 8], text: [0, 0, 0] },
+            "Gas": { code: "G", bg: [71, 85, 105], text: [255, 255, 255] },
+            "Potential/Gravity": { code: "P", bg: [126, 34, 206], text: [255, 255, 255] }
         };
 
         function resetApp() {
@@ -81,7 +86,7 @@
         function reindexAllSteps() {
             const steps = document.querySelectorAll('.step-card');
             const typeCounts = {};
-            steps.forEach((card, index) => {
+            steps.forEach((card) => {
                 const id = card.dataset.internalId;
                 const type = document.getElementById(`energy-type-${id}`).value;
                 if (type) {
@@ -112,8 +117,8 @@
                             <option value="">-- Select --</option>${Object.keys(energyConfig).map(k => `<option value="${k}">${k}</option>`).join('')}
                         </select>
                     </div>
-                    <div><label class="label-style">Isolation Method</label><textarea id="isolate-${id}" class="w-full border-2 p-3 rounded-xl text-sm validate outline-none" rows="2"></textarea></div>
-                    <div><label class="label-style">Verification</label><textarea id="verify-${id}" class="w-full border-2 p-3 rounded-xl text-sm validate outline-none" rows="2"></textarea></div>
+                    <div><label class="label-style">Isolation Method</label><textarea id="isolate-${id}" class="w-full border-2 p-3 rounded-xl text-sm validate outline-none" rows="2" placeholder="How to isolate..."></textarea></div>
+                    <div><label class="label-style">Verification</label><textarea id="verify-${id}" class="w-full border-2 p-3 rounded-xl text-sm validate outline-none" rows="2" placeholder="How to verify zero energy..."></textarea></div>
                     <div class="border-2 border-dashed border-slate-200 rounded-2xl p-4 text-center cursor-pointer bg-slate-50" onclick="document.getElementById('file-${id}').click()">
                         <p class="text-red-600 font-black text-xs">📸 CAPTURE PHOTO</p>
                         <input type="file" id="file-${id}" accept="image/*" capture="environment" onchange="previewFile(this, ${id})" class="hidden">
@@ -155,7 +160,7 @@
             const steps = document.querySelectorAll('.step-card');
             const qrData = new QRious({ value: currentID, size: 300 }).toDataURL();
 
-            // Analytics logic for Section 1
+            // Section 1 Analytics Logic
             const energyCounts = {};
             steps.forEach(card => {
                 const id = card.dataset.internalId;
@@ -168,13 +173,13 @@
             doc.setFillColor(30, 41, 59); doc.rect(0, 0, 210, 22, 'F');
             doc.setTextColor(255, 255, 255); doc.setFontSize(16); doc.text("LOTO POSTED PROCEDURE", 10, 14);
 
-            doc.setFillColor(248, 250, 252); doc.rect(10, 28, 190, 40, 'FD'); 
+            doc.setFillColor(248, 250, 252); doc.rect(10, 28, 190, 45, 'FD'); 
             doc.setTextColor(30, 41, 59); doc.setFontSize(9);
             doc.text(`ID: ${currentID}`, 14, 36);
             doc.text(`EQUIPMENT: ${equip}`, 14, 43);
             doc.text(`LOCATION: ${loc}`, 14, 50);
             
-            // Energy Source Data in Section 1
+            // Section 1: Number and Types of Energy Sources
             doc.setFont("helvetica", "bold");
             doc.text(`TOTAL SOURCES: ${steps.length}`, 115, 36);
             doc.setFont("helvetica", "normal");
@@ -190,7 +195,7 @@
             });
 
             doc.autoTable({
-                startY: 75,
+                startY: 80,
                 head: [['TAG', 'ISOLATION METHOD', 'VISUAL', 'VERIFICATION']],
                 body: tableRows.map(r => r.slice(0, 4)),
                 styles: { fontSize: 7, minCellHeight: 40, verticalAlign: 'middle' },
@@ -206,37 +211,34 @@
             // PAGE 2: SEQUENCES
             doc.addPage();
             doc.setFillColor(30, 41, 59); doc.rect(0, 0, 210, 15, 'F');
-            doc.setTextColor(255, 255, 255); doc.setFontSize(12); doc.text("SHUTDOWN, LOCK, TAG & TEST SEQUENCE", 105, 10, { align: "center" });
+            doc.setTextColor(255, 255, 255); doc.setFontSize(12); doc.text("SHUTDOWN & RESTORATION SEQUENCES", 105, 10, { align: "center" });
 
             doc.autoTable({
                 startY: 20,
-                head: [['#', 'STEP', 'DESCRIPTION']],
+                head: [['#', 'SHUTDOWN STEP', 'DESCRIPTION']],
                 body: [
-                    ['1', 'Notify Employees', 'Notify all affected employees that servicing or maintenance is required...'],
-                    ['2', 'Review Procedure', 'Authorized employee shall refer to company procedure to identify hazards...'],
-                    ['3', 'Machine Stop', 'Shut it down by normal stopping procedure (stop button, switch, etc.)...'],
-                    ['4', 'Isolate Energy', 'Follow graphical procedure to de-activate energy isolating device(s)...'],
-                    ['5', 'Lockout Energy', 'Lock out & tag out the energy isolating device(s) with individual locks...'],
-                    ['6', 'Dissipate Energy', 'Residual energy (capacitors, springs, pressure) must be dissipated or restrained...'],
-                    ['7', 'Attempt Restart', 'Verify isolation by operating push button or controls.']
+                    ['1', 'Notify', 'Notify all affected employees...'],
+                    ['2', 'Review', 'Refer to company procedure to identify hazards...'],
+                    ['3', 'Stop', 'Shut down machine using normal procedures...'],
+                    ['4', 'Isolate', 'Operate energy isolating device(s)...'],
+                    ['5', 'Lock/Tag', 'Apply individual locks and tags...'],
+                    ['6', 'Dissipate', 'Release stored energy (capacitors, pressure)...'],
+                    ['7', 'Verify', 'Verify zero energy state via testing.']
                 ],
-                headStyles: { fillColor: [185, 28, 28] }, styles: { fontSize: 8 }
+                headStyles: { fillColor: [185, 28, 28] }
             });
 
-            doc.setFillColor(30, 41, 59); doc.rect(0, doc.lastAutoTable.finalY + 10, 210, 15, 'F');
-            doc.setTextColor(255, 255, 255); doc.text("RESTORE TO SERVICE SEQUENCE", 105, doc.lastAutoTable.finalY + 20, { align: "center" });
-
             doc.autoTable({
-                startY: doc.lastAutoTable.finalY + 25,
-                head: [['#', 'STEP', 'DESCRIPTION']],
+                startY: doc.lastAutoTable.finalY + 10,
+                head: [['#', 'RESTORATION STEP', 'DESCRIPTION']],
                 body: [
-                    ['1', 'Check Machine', 'Ensure nonessential items have been removed and components are intact...'],
-                    ['2', 'Check Area', 'Ensure all employees have been safely positioned or removed from the area...'],
-                    ['3', 'Verify Machine', 'Verify that the controls are in neutral.'],
-                    ['4', 'Remove Lockout', 'Remove locks, tags and devices. Re-energize in reverse order...'],
-                    ['5', 'Notify Employees', 'Notify affected employees that servicing is completed.']
+                    ['1', 'Inspect', 'Remove tools and check machine integrity...'],
+                    ['2', 'Position', 'Ensure all personnel are safely positioned...'],
+                    ['3', 'Neutral', 'Verify controls are in neutral...'],
+                    ['4', 'Remove', 'Remove locks and tags...'],
+                    ['5', 'Notify', 'Notify affected employees of completion.']
                 ],
-                headStyles: { fillColor: [30, 64, 175] }, styles: { fontSize: 8 }
+                headStyles: { fillColor: [30, 64, 175] }
             });
 
             // PAGE 3: TAGS
@@ -263,7 +265,7 @@
                 if (cy > 240) { doc.addPage(); cx = 15; cy = 30; }
             });
 
-            doc.save(`${currentID}_LOTO.pdf`);
+            doc.save(`${currentID}_LOTO_PROCEDURE.pdf`);
         }
         window.onload = () => { updateID(); addNewPoint(); };
     </script>
