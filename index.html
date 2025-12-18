@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>LOTO Pro - Enterprise Edition</title>
+    <title>LOTO Pro - Final Compliance</title>
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#b91c1c">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrious/4.0.2/qrious.min.js"></script>
@@ -14,10 +14,9 @@
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap');
         body { font-family: 'Inter', sans-serif; padding-bottom: 140px; background-color: #f8fafc; }
         .label-style { font-size: 11px; font-weight: 800; color: #1e293b; text-transform: uppercase; margin-bottom: 6px; display: block; }
-        .multi-device-scroll { max-height: 250px; overflow-y: auto; border: 2px solid #cbd5e1; padding: 12px; border-radius: 12px; background: #ffffff; }
+        .multi-device-scroll { max-height: 220px; overflow-y: auto; border: 2px solid #cbd5e1; padding: 12px; border-radius: 12px; background: #ffffff; }
         .sticky-bottom { position: fixed; bottom: 0; left: 0; right: 0; background: white; padding: 20px; z-index: 1000; display: flex; gap: 12px; box-shadow: 0 -10px 25px rgba(0,0,0,0.1); }
         .step-card { border-left: 8px solid #e2e8f0; border-radius: 16px; background: white; padding: 24px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
-        .validate.error-border { border-color: #ef4444 !important; background-color: #fef2f2; }
     </style>
 </head>
 <body>
@@ -28,21 +27,19 @@
         </header>
 
         <div class="bg-white p-6 rounded-2xl border border-slate-200 mb-8 space-y-4 shadow-sm">
-            <h2 class="text-[10px] font-black text-slate-400 uppercase tracking-widest">General Information</h2>
-            <div><label class="label-style">Facility</label><input type="text" id="facility" oninput="updateID()" class="w-full border-2 p-3 rounded-xl validate" placeholder="PLANT-NORTH"></div>
-            <div><label class="label-style">Equipment</label><input type="text" id="description" oninput="updateID()" class="w-full border-2 p-3 rounded-xl validate" placeholder="AIR COMPRESSOR"></div>
-            <div class="grid grid-cols-2 gap-4">
-                <div><label class="label-style">Location</label><input type="text" id="location" oninput="updateID()" class="w-full border-2 p-3 rounded-xl validate"></div>
-                <div><label class="label-style">Date</label><input type="date" id="revisedDate" class="w-full border-2 p-3 rounded-xl validate"></div>
-            </div>
+            <h2 class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Metadata</h2>
+            <div><label class="label-style">Facility</label><input type="text" id="facility" oninput="updateID()" class="w-full border-2 p-3 rounded-xl validate" placeholder="PLANT-X"></div>
+            <div><label class="label-style">Specific Location</label><input type="text" id="location" oninput="updateID()" class="w-full border-2 p-3 rounded-xl validate" placeholder="e.g. SUBSTATION 04"></div>
+            <div><label class="label-style">Equipment</label><input type="text" id="description" oninput="updateID()" class="w-full border-2 p-3 rounded-xl validate" placeholder="BOILER PUMP"></div>
+            <div><label class="label-style">Date</label><input type="date" id="revisedDate" class="w-full border-2 p-3 rounded-xl validate"></div>
         </div>
 
         <div id="points-list" class="space-y-6"></div>
     </div>
 
     <div class="sticky-bottom">
-        <button onclick="addNewPoint()" class="flex-1 bg-slate-900 text-white font-black py-4 rounded-2xl shadow-lg">+ ADD STEP</button>
-        <button onclick="validateAndGenerate()" class="flex-1 bg-red-600 text-white font-black py-4 rounded-2xl shadow-lg italic">GENERATE PDF</button>
+        <button onclick="addNewPoint()" class="flex-1 bg-slate-900 text-white font-black py-4 rounded-2xl">+ STEP</button>
+        <button onclick="validateAndGenerate()" class="flex-1 bg-red-600 text-white font-black py-4 rounded-2xl italic">GENERATE</button>
     </div>
 
     <script>
@@ -53,25 +50,17 @@
         const energyConfig = {
             "Electrical": { code: "E", bg: [185, 28, 28], text: [255, 255, 255] },
             "Mechanical": { code: "M", bg: [30, 64, 175], text: [255, 255, 255] },
-            "Compressed Air": { code: "CA", bg: [8, 145, 178], text: [255, 255, 255] },
             "Hydraulic": { code: "H", bg: [194, 65, 12], text: [255, 255, 255] },
-            "Pneumatic": { code: "P", bg: [147, 51, 234], text: [255, 255, 255] },
-            "Steam": { code: "S", bg: [71, 85, 105], text: [255, 255, 255] },
-            "Water": { code: "W", bg: [14, 165, 233], text: [255, 255, 255] },
-            "Radiation": { code: "R", bg: [234, 179, 8], text: [0, 0, 0] }
+            "Pneumatic": { code: "P", bg: [147, 51, 234], text: [255, 255, 255] }
         };
 
-        const deviceOptions = [
-            "Padlock (Personal)", "Lockout Hasp", "Single-Pole Breaker Lock", "Multi-Pole Breaker Lock",
-            "480V Breaker Lockout", "Wall Switch Lockout", "Plug Lockout Box", "Ball Valve Lockout (S)",
-            "Ball Valve Lockout (L)", "Gate Valve Lockout", "Butterfly Valve Lockout", "Cable Lockout (5ft)",
-            "Cable Lockout (10ft)", "Pneumatic Disconnect", "Cylinder Tank Lockout", "E-Stop Cover", "Group Box"
-        ];
+        const deviceOptions = ["Padlock", "Lockout Hasp", "Breaker Lock", "Ball Valve Lock", "Cable Lockout"];
 
         function updateID() {
             const fac = document.getElementById('facility').value.trim().toUpperCase() || "FAC";
+            const loc = document.getElementById('location').value.trim().toUpperCase() || "LOC";
             const desc = document.getElementById('description').value.trim().toUpperCase() || "DESC";
-            currentID = `${fac}-${desc.substring(0,6)}`;
+            currentID = `${fac.substring(0,3)}-${loc.substring(0,3)}-${desc.substring(0,5)}`;
             document.getElementById('displayID').innerText = currentID;
         }
 
@@ -105,16 +94,14 @@
                 </div>
                 <div class="space-y-4">
                     <select id="energy-type-${id}" onchange="reindexAllSteps()" class="w-full border-2 p-3 rounded-xl validate">
-                        <option value="">-- Select Energy Source --</option>
+                        <option value="">-- Energy Type --</option>
                         ${Object.keys(energyConfig).map(k => `<option value="${k}">${k}</option>`).join('')}
                     </select>
-                    <div class="multi-device-scroll">
-                        ${deviceOptions.map(o => `<label class="flex items-center mb-2"><input type="checkbox" class="device-checkbox-${id} mr-2"> <span class="text-xs font-bold text-slate-600">${o}</span></label>`).join('')}
-                    </div>
-                    <textarea id="isolate-${id}" class="w-full border-2 p-3 rounded-xl validate" rows="2" placeholder="Describe Isolation Action"></textarea>
-                    <textarea id="verify-${id}" class="w-full border-2 p-3 rounded-xl validate" rows="2" placeholder="Verification Method"></textarea>
+                    <div class="multi-device-scroll">${deviceOptions.map(o => `<label class="flex items-center mb-2"><input type="checkbox" class="device-checkbox-${id} mr-2"> <span class="text-xs font-bold text-slate-600">${o}</span></label>`).join('')}</div>
+                    <textarea id="isolate-${id}" class="w-full border-2 p-3 rounded-xl validate" rows="2" placeholder="Method"></textarea>
+                    <textarea id="verify-${id}" class="w-full border-2 p-3 rounded-xl validate" rows="2" placeholder="Verification"></textarea>
                     <div class="bg-slate-50 border-2 border-dashed border-slate-300 rounded-2xl p-6 text-center" onclick="document.getElementById('file-${id}').click()">
-                        <span class="text-red-600 font-black text-xs uppercase italic">📸 Capture Site Photo</span>
+                        <span class="text-red-600 font-black text-xs uppercase">📸 Capture Site Photo</span>
                         <input type="file" id="file-${id}" accept="image/*" capture="environment" onchange="processImage(this, ${id})" class="hidden">
                         <div id="preview-box-${id}" class="mt-3 hidden shadow-md rounded-xl overflow-hidden border-4 border-white"><img id="img-target-${id}" class="w-full h-48 object-cover"></div>
                     </div>
@@ -153,42 +140,21 @@
             const doc = new jsPDF('p', 'mm', 'a4');
             const qr = new QRious({ value: currentID, size: 250 });
             const steps = document.querySelectorAll('.step-card');
+            const loc = document.getElementById('location').value;
 
-            // --- ENERGY COUNT LOGIC ---
-            const counts = {};
-            steps.forEach(card => {
-                const id = card.dataset.internalId;
-                const type = document.getElementById(`energy-type-${id}`).value;
-                if (type) counts[type] = (counts[type] || 0) + 1;
-            });
-            const energySummary = Object.entries(counts).map(([t, c]) => `${t}-${c.toString().padStart(2, '0')}`).join(', ');
-
-            // --- PAGE 1: HEADER & COMPLIANCE ---
+            // PAGE 1: HEADER & TABLE
             doc.setFillColor(30, 41, 59); doc.rect(0, 0, 210, 20, 'F');
             doc.setTextColor(255, 255, 255); doc.setFontSize(14); doc.text("LOTO INDUSTRIAL PROCEDURE", 10, 13);
-            doc.addImage(qr.toDataURL(), 'PNG', 170, 2, 16, 16);
+            doc.addImage(qr.toDataURL(), 'PNG', 175, 2, 16, 16);
 
-            doc.setDrawColor(0); doc.setLineWidth(0.4); doc.rect(10, 25, 190, 36, 'D');
+            doc.setDrawColor(0); doc.setLineWidth(0.4); doc.rect(10, 28, 190, 40, 'D');
             doc.setTextColor(0); doc.setFontSize(8); doc.setFont("helvetica", "bold");
-            doc.text(`ID#: ${currentID}`, 14, 32);
-            doc.text(`FACILITY: ${document.getElementById('facility').value}`, 14, 39);
-            doc.text(`EQUIPMENT: ${document.getElementById('description').value}`, 14, 46);
-            doc.text(`DATE: ${document.getElementById('revisedDate').value}`, 14, 53);
-            
-            doc.text(`TOTAL SOURCES: ${steps.length}`, 120, 32);
-            const wrappedSummary = doc.splitTextToSize(`SUMMARY: ${energySummary}`, 70);
-            doc.text(wrappedSummary, 120, 39);
+            doc.text(`ID: ${currentID}`, 14, 34);
+            doc.text(`FACILITY: ${document.getElementById('facility').value}`, 14, 40);
+            doc.text(`LOCATION: ${loc}`, 14, 46);
+            doc.text(`EQUIPMENT: ${document.getElementById('description').value}`, 14, 52);
+            doc.text(`REVISION: ${document.getElementById('revisedDate').value}`, 14, 58);
 
-            // Compliance Box
-            doc.rect(10, 65, 190, 50);
-            doc.setFontSize(7.5); doc.text("PURPOSE & SCOPE", 14, 72);
-            doc.setFont("helvetica", "normal");
-            doc.text("1. Purpose: Establish mandatory requirements for isolating hazardous energy whenever maintenance is performed.", 14, 78);
-            doc.text("2. Scope: Applies to all employees performing service where unexpected startup could occur.", 14, 84);
-            doc.text("3. Authorization: Only 'Authorized' personnel may perform this specific procedure.", 14, 90);
-            doc.text("4. Application: 1. Notify 2. Identify 3. Stop 4. Isolate 5. Lock/Tag 6. Release Stored Energy 7. Verify.", 14, 96);
-
-            // TABLE PAGE 1
             const tableBody = [];
             steps.forEach(card => {
                 const id = card.dataset.internalId;
@@ -197,7 +163,7 @@
             });
 
             doc.autoTable({
-                startY: 125, head: [['TAG', 'DEVICES', 'METHOD', 'VISUAL', 'VERIFY']], body: tableBody.map(r => r.slice(0, 5)),
+                startY: 120, head: [['TAG', 'DEVICES', 'METHOD', 'VISUAL', 'VERIFY']], body: tableBody.map(r => r.slice(0, 5)),
                 theme: 'grid', styles: { minCellHeight: 45, verticalAlign: 'middle', fontSize: 7, lineWidth: 0.2 },
                 columnStyles: { 3: { cellWidth: 55 } },
                 didDrawCell: (d) => {
@@ -216,35 +182,28 @@
                 }
             });
 
-            // --- PAGE 2: SAFETY SEQUENCES ---
+            // PAGE 2: SEQUENCES
             doc.addPage();
-            doc.setFillColor(30, 41, 59); doc.rect(0, 0, 210, 20, 'F');
-            doc.setTextColor(255, 255, 255); doc.text("SHUTDOWN & RESTORATION GUIDELINES", 105, 13, { align: "center" });
-            
-            doc.autoTable({
-                startY: 25, head: [['#','SHUTDOWN SEQUENCE','ACTION DESCRIPTION']],
-                body:[['1','Notify','Inform all affected associates.'],['2','Identify','Locate all energy sources.'],['3','Stop','Standard stopping procedure.'],['4','Isolate','Operate disconnects/valves.'],['5','Lockout','Apply individual locks/tags.'],['6','Release','Relieve stored pressure/energy.'],['7','Verify','Attempt restart, then OFF.']],
-                theme:'grid', headStyles:{fillColor:[185,28,28]}, styles:{fontSize: 8.5}
-            });
+            doc.autoTable({ startY: 20, head: [['SHUTDOWN SEQUENCE', 'ACTION']], body: [['1. Notify','Inform affected employees.'],['2. Review','Identify energy sources.'],['3. Stop','Standard shutdown.'],['4. Isolate','Operate disconnects.'],['5. Lock/Tag','Apply locks.'],['6. Release','Dissipate energy.'],['7. Verify','Test restart.'],], theme:'grid', headStyles:{fillColor:[185,28,28]} });
 
-            doc.autoTable({
-                startY: doc.lastAutoTable.finalY + 10, head: [['#','RESTORATION SEQUENCE','ACTION DESCRIPTION']],
-                body:[['1','Inspect','Remove tools/parts and clear area.'],['2','Area','Ensure all personnel are safely clear.'],['3','Verify','Ensure controls are in Neutral/OFF.'],['4','Restore','Remove all locks and tags personally.'],['5','Notify','Advise work is complete.']],
-                theme:'grid', headStyles:{fillColor:[30, 64, 175]}, styles:{fontSize: 8.5}
+            // PAGE 3: TAG GENERATION
+            doc.addPage();
+            doc.text("ISOLATION TAGS (1\" x 2\")", 10, 15);
+            let cx = 15, cy = 25;
+            tableBody.forEach(row => {
+                const sid = row[5];
+                const c = energyConfig[document.getElementById(`energy-type-${sid}`).value] || {bg:[255,255,255], text:[0,0,0]};
+                doc.setFillColor(...c.bg); doc.rect(cx, cy, 50, 25, 'F');
+                doc.setTextColor(...c.text); doc.setFontSize(18); doc.text(row[0], cx+4, cy+10);
+                doc.addImage(qr.toDataURL(), 'PNG', cx + 33, cy + 3, 14, 14);
+                doc.setFontSize(5); doc.text(`LOC: ${loc.substring(0,15)}`, cx+4, cy+18);
+                cx += 55; if (cx > 160) { cx = 15; cy += 30; }
             });
 
             doc.save(`${currentID}_FINAL.pdf`);
         }
 
-        function validateAndGenerate() {
-            let ok = true;
-            document.querySelectorAll('.validate').forEach(el => {
-                if (!el.value.trim()) { el.classList.add('error-border'); ok = false; }
-                else { el.classList.remove('error-border'); }
-            });
-            if (ok) generatePDF(); else alert("Incomplete form.");
-        }
-
+        function validateAndGenerate() { generatePDF(); }
         window.onload = () => { addNewPoint(); updateID(); };
     </script>
 </body>
