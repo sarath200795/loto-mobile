@@ -22,8 +22,11 @@
             <div>
                 <h1 class="text-2xl font-black text-slate-900 italic">LOTO<span class="text-red-600">PRO</span></h1>
             </div>
-            <div class="text-right">
-                <button onclick="resetApp()" class="text-[10px] font-bold text-slate-400 uppercase hover:text-red-600">Reset</button>
+            <div class="text-right flex flex-col items-end gap-1">
+                <div class="flex gap-3">
+                    <a href="privacy.html" target="_blank" class="text-[10px] font-bold text-slate-400 uppercase hover:text-slate-900 transition underline tracking-wider">Privacy</a>
+                    <button onclick="resetApp()" class="text-[10px] font-bold text-slate-400 uppercase hover:text-red-600 transition tracking-wider">Reset</button>
+                </div>
                 <p id="displayID" class="text-xs font-mono font-bold text-red-600">PENDING</p>
             </div>
         </div>
@@ -42,8 +45,8 @@
     </div>
 
     <div class="fixed bottom-0 left-0 right-0 p-4 bg-white/90 backdrop-blur-md flex gap-4 z-[1000] border-t">
-        <button onclick="addNewPoint()" class="flex-1 bg-slate-900 text-white font-black py-4 rounded-2xl shadow-xl">+ ADD STEP</button>
-        <button onclick="validateAndGenerate()" class="flex-1 bg-red-600 text-white font-black py-4 rounded-2xl shadow-xl italic">GENERATE PDF</button>
+        <button onclick="addNewPoint()" class="flex-1 bg-slate-900 text-white font-black py-4 rounded-2xl shadow-xl active:scale-95 transition tracking-widest">+ ADD STEP</button>
+        <button onclick="validateAndGenerate()" class="flex-1 bg-red-600 text-white font-black py-4 rounded-2xl shadow-xl active:scale-95 transition tracking-widest italic">GENERATE PDF</button>
     </div>
 
     <script>
@@ -107,7 +110,9 @@
             card.innerHTML = `
                 <div class="mb-4 flex justify-between items-center border-b pb-3">
                     <span class="point-num-label text-slate-800 font-black text-sm italic">STEP #${id}</span>
-                    <input type="text" id="tag-${id}" class="text-right font-mono font-bold text-red-600 bg-red-50 p-1 w-16 rounded border-none" readonly>
+                    <div class="flex items-center gap-3">
+                        <input type="text" id="tag-${id}" class="text-right font-mono font-bold text-red-600 bg-red-50 p-1 w-16 rounded border-none" readonly>
+                    </div>
                 </div>
                 <div class="space-y-4">
                     <div>
@@ -159,7 +164,6 @@
             const steps = document.querySelectorAll('.step-card');
             const qrData = new QRious({ value: currentID, size: 300 }).toDataURL();
 
-            // Section 1 Analytics Logic
             const energyCounts = {};
             steps.forEach(card => {
                 const id = card.dataset.internalId;
@@ -168,22 +172,17 @@
             });
             const summaryString = Object.entries(energyCounts).map(([k,v]) => `${k}(${v})`).join(', ');
 
-            // PAGE 1: HEADER & TABLE
             doc.setFillColor(30, 41, 59); doc.rect(0, 0, 210, 22, 'F');
             doc.setTextColor(255, 255, 255); doc.setFontSize(16); doc.text("LOTO POSTED PROCEDURE", 10, 14);
-
             doc.setFillColor(248, 250, 252); doc.rect(10, 28, 190, 45, 'FD'); 
             doc.setTextColor(30, 41, 59); doc.setFontSize(9);
             doc.text(`ID: ${currentID}`, 14, 36);
             doc.text(`EQUIPMENT: ${equip}`, 14, 43);
             doc.text(`LOCATION: ${loc}`, 14, 50);
-            
-            doc.setFont("helvetica", "bold");
-            doc.text(`TOTAL SOURCES: ${steps.length}`, 115, 36);
+            doc.setFont("helvetica", "bold"); doc.text(`TOTAL SOURCES: ${steps.length}`, 115, 36);
             doc.setFont("helvetica", "normal");
             const wrapSummary = doc.splitTextToSize(`ENERGY TYPES: ${summaryString}`, 60);
             doc.text(wrapSummary, 115, 43);
-            
             doc.addImage(qrData, 'PNG', 170, 32, 25, 25);
 
             const tableRows = [];
@@ -206,40 +205,22 @@
                 }
             });
 
-            // PAGE 2: SEQUENCES
             doc.addPage();
             doc.setFillColor(30, 41, 59); doc.rect(0, 0, 210, 15, 'F');
             doc.setTextColor(255, 255, 255); doc.setFontSize(12); doc.text("SHUTDOWN & RESTORATION SEQUENCES", 105, 10, { align: "center" });
-
             doc.autoTable({
                 startY: 20,
                 head: [['#', 'SHUTDOWN STEP', 'DESCRIPTION']],
-                body: [
-                    ['1', 'Notify', 'Notify all affected employees...'],
-                    ['2', 'Review', 'Refer to company procedure to identify hazards...'],
-                    ['3', 'Stop', 'Shut down machine using normal procedures...'],
-                    ['4', 'Isolate', 'Operate energy isolating device(s)...'],
-                    ['5', 'Lock/Tag', 'Apply individual locks and tags...'],
-                    ['6', 'Dissipate', 'Release stored energy (capacitors, pressure)...'],
-                    ['7', 'Verify', 'Verify zero energy state via testing.']
-                ],
+                body: [['1', 'Notify', 'Notify all affected employees...'],['2', 'Review', 'Refer to procedures...'],['3', 'Stop', 'Standard stop...'],['4', 'Isolate', 'Operate devices...'],['5', 'Lock/Tag', 'Apply locks...'],['6', 'Dissipate', 'Release energy...'],['7', 'Verify', 'Test zero energy.']],
                 headStyles: { fillColor: [185, 28, 28] }
             });
-
             doc.autoTable({
                 startY: doc.lastAutoTable.finalY + 10,
                 head: [['#', 'RESTORATION STEP', 'DESCRIPTION']],
-                body: [
-                    ['1', 'Inspect', 'Remove tools and check machine integrity...'],
-                    ['2', 'Position', 'Ensure all personnel are safely positioned...'],
-                    ['3', 'Neutral', 'Verify controls are in neutral...'],
-                    ['4', 'Remove', 'Remove locks and tags...'],
-                    ['5', 'Notify', 'Notify affected employees of completion.']
-                ],
+                body: [['1', 'Inspect', 'Remove tools...'],['2', 'Position', 'Clear personnel...'],['3', 'Neutral', 'Check controls...'],['4', 'Remove', 'Remove locks...'],['5', 'Notify', 'Notify completion.']],
                 headStyles: { fillColor: [30, 64, 175] }
             });
 
-            // PAGE 3: TAGS (Updated with Document ID)
             doc.addPage();
             let cx = 15, cy = 30;
             tableRows.forEach((row) => {
@@ -247,38 +228,17 @@
                 const tagNum = row[0];
                 const type = document.getElementById(`energy-type-${sid}`).value;
                 const config = energyConfig[type] || {bg: [200, 200, 200], text: [0, 0, 0]};
-
-                // Tag Background & Border
-                doc.setDrawColor(0); 
-                doc.setFillColor(255, 255, 255); 
-                doc.rect(cx, cy, 60, 35, 'FD');
-
-                // Tag Header (Energy Code)
-                doc.setFillColor(...config.bg); 
-                doc.rect(cx, cy, 35, 12, 'F');
-                doc.setTextColor(...config.text); 
-                doc.setFontSize(14); 
-                doc.setFont("helvetica", "bold");
+                doc.setDrawColor(0); doc.setFillColor(255, 255, 255); doc.rect(cx, cy, 60, 35, 'FD');
+                doc.setFillColor(...config.bg); doc.rect(cx, cy, 35, 12, 'F');
+                doc.setTextColor(...config.text); doc.setFontSize(14); doc.setFont("helvetica", "bold");
                 doc.text(tagNum, cx + 17.5, cy + 8.5, { align: 'center' });
-
-                // Tag Details
-                doc.setTextColor(30, 41, 59); 
-                doc.setFontSize(7);
-                doc.setFont("helvetica", "normal");
+                doc.setTextColor(30, 41, 59); doc.setFontSize(7);
                 doc.text(`EQ: ${equip.substring(0, 22)}`, cx + 2, cy + 18);
                 doc.text(`LOC: ${loc.substring(0, 22)}`, cx + 2, cy + 23);
-                
-                // Document ID Placement
-                doc.setFontSize(6);
-                doc.setTextColor(100, 116, 139);
+                doc.setFontSize(6); doc.setTextColor(100, 116, 139);
                 doc.text(`PROC ID: ${currentID}`, cx + 2, cy + 28);
-
-                // QR Code
                 doc.addImage(qrData, 'PNG', cx + 38, cy + 4, 18, 18);
-
-                // Grid Math
-                cx += 65;
-                if (cx > 160) { cx = 15; cy += 45; }
+                cx += 65; if (cx > 160) { cx = 15; cy += 45; }
                 if (cy > 240) { doc.addPage(); cx = 15; cy = 30; }
             });
 
@@ -288,5 +248,3 @@
     </script>
 </body>
 </html>
-
-
