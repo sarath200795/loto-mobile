@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Privacy Policy - LOTOPRO</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap');
+        body { font-family: 'Inter', sans-serif; background-color: #f8fafc; color: #1e293b; }
+        .content-card { background: white; border-radius: 24px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); border: 1px solid #e2e8f0; }
+    </style>
+</head>
+<body class="p-6">
+    <div class="max-w-3xl mx-auto">
+        <div class="mb-10 text-center">
+            <h1 class="text-4xl font-black text-slate-900 italic mb-2">LOTO<span class="text-red-600">PRO</span></h1>
+            <p class="text-sm font-bold text-slate-400 uppercase tracking-widest">Privacy Policy & User Agreement</p>
+        </div>
+
+        <div class="content-card p-8 md:p-12 space-y-8">
+            <section>
+                <h2 class="text-xl font-black text-slate-900 uppercase tracking-tight mb-4 border-b-2 border-red-600 inline-block">1. Data Architecture</h2>
+                <p class="leading-relaxed text-slate-600">
+                    LOTO PRO is built as a <strong>Local-First Application</strong>. This means that all facility names, equipment data, and site photos entered into the interface are processed exclusively within your browser's temporary memory (RAM). We do not operate a central database, and your proprietary industrial data is never transmitted to our servers.
+                </p>
+            </section>
+
+            <section>
+                <h2 class="text-xl font-black text-slate-900 uppercase tracking-tight mb-4 border-b-2 border-red-600 inline-block">2. Camera & Photo Usage</h2>
+                <p class="leading-relaxed text-slate-600">
+                    The application requires camera access to document energy isolation points. 
+                    <ul class="list-disc ml-5 mt-3 space-y-2">
+                        <li>Photos are stored in a local JavaScript object during your session.</li>
+                        <li>Images are encoded as Base64 strings for the purpose of PDF generation only.</li>
+                        <li>All image data is permanently destroyed when the "Reset" button is clicked or the browser tab is closed.</li>
+                    </ul>
+                </p>
+            </section>
+
+            <section>
+                <h2 class="text-xl font-black text-slate-900 uppercase tracking-tight mb-4 border-b-2 border-red-600 inline-block">3. Compliance Responsibility</h2>
+                <div class="bg-red-50 border-l-4 border-red-600 p-4 rounded-r-lg">
+                    <p class="text-sm text-red-900 font-bold italic">
+                        "OSHA 29 CFR 1910.147 requires that energy control procedures be developed, documented, and utilized. While LOTO PRO facilitates this documentation, the authorized user is solely responsible for verifying the accuracy of all isolation points, energy magnitudes, and verification steps."
+                    </p>
+                </div>
+            </section>
+
+            <section>
+                <h2 class="text-xl font-black text-slate-900 uppercase tracking-tight mb-4 border-b-2 border-red-600 inline-block">4. External Libraries</h2>
+                <p class="leading-relaxed text-slate-600">
+                    We utilize third-party libraries (jsPDF, TailwindCSS, QRious) via CDNs. These services provide the functional code needed for layout and PDF creation. They do not have access to the data you input into the fields.
+                </p>
+            </section>
+
+            <section class="pt-6 border-t border-slate-100">
+                <p class="text-xs text-slate-400 font-medium">
+                    Last Updated: December 22, 2025<br>
+                    LOTO PRO Enterprise Compliance Engine
+                </p>
+            </section>
+        </div>
+
+        <div class="mt-8 text-center">
+            <a href="index.html" class="inline-block bg-slate-900 text-white font-black px-8 py-4 rounded-2xl shadow-xl hover:bg-slate-800 transition">
+                RETURN TO APPLICATION
+            </a>
+        </div>
+    </div>
+</body>
+</html>
