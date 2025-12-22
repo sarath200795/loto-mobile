@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Archive - LOTO PRO Enterprise</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap');
+        body { font-family: 'Inter', sans-serif; background-color: #020617; color: white; overflow-x: hidden; }
+        .bg-mesh { background: radial-gradient(circle at 0% 0%, rgba(220, 38, 38, 0.08) 0%, transparent 50%), radial-gradient(circle at 100% 100%, rgba(37, 99, 235, 0.08) 0%, transparent 50%), #020617; }
+        .glass-card { background: rgba(255, 255, 255, 0.03); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.08); transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
+        
+        /* Highlight for procedures older than 12 months */
+        .expired-card { border: 2px solid rgba(239, 68, 68, 0.5) !important; background: rgba(239, 68, 68, 0.05) !important; animation: pulse 2s infinite; }
+        @keyframes pulse { 0%, 100% { border-color: rgba(239, 68, 68, 0.5); } 50% { border-color: rgba(239, 68, 68, 1); } }
+        
+        .tab-btn { position: relative; font-weight: 800; text-transform: uppercase; font-size: 11px; color: #64748b; }
+        .tab-active { color: #ef4444; }
+        .tab-active::after { content: ''; position: absolute; bottom: -8px; left: 0; width: 100%; height: 3px; background: #ef4444; border-radius: 10px; }
+        
+        .filter-select { background: #0f172a; border: 1px solid rgba(255,255,255,0.1); color: #94a3b8; font-size: 9px; font-weight: 900; text-transform: uppercase; border-radius: 12px; }
+        .filter-select option { background: #0f172a; color: white; }
+        
+        .modal { display:none; position:fixed; z-index:1000; left:0; top:0; width:100%; height:100%; background:rgba(0,0,0,0.9); backdrop-filter:blur(10px); }
+    </style>
+</head>
+<body class="bg-mesh min-h-screen pb-20">
+    <div id="historyModal" class="modal items-center justify-center">
+        <div class="glass-card w-full max-w-lg rounded-[40px] p-10 mx-4 border-white/20">
+            <div class="flex justify-between items-center mb-8">
+                <h3 class="text-2xl font-black italic uppercase text-white">Version Log</h3>
+                <button onclick="document.getElementById('historyModal').style.display='none'" class="text-white text-2xl font-bold">&times;</button>
+            </div>
+            <div id="historyContent" class="space-y-4 max-h-[50vh] overflow-y-auto pr-4"></div>
+        </div>
+    </div>
+
+    <nav class="p-6 flex justify-between items-center max-w-7xl mx-auto border-b border-white/5">
+        <div onclick="window.location.href='home.html'" class="cursor-pointer flex items-center gap-3">
+            <div class="w-8 h-8 bg-red-600 rounded-lg flex items-center justify-center font-black italic text-sm text-white">LP</div>
+            <h1 class="text-xl font-black italic tracking-tighter uppercase text-white">LOTO<span class="text-red-600">PRO</span></h1>
+        </div>
+        <div class="flex gap-3">
+            <button onclick="window.location.href='dashboard.html'" class="bg-blue-600/10 text-blue-400 text-[10px] font-black px-6 py-2.5 rounded-full uppercase border border-blue-500/20 hover:bg-blue-600 hover:text-white transition-all">Dashboard</button>
+            <button id="createBtn" onclick="window.location.href='index.html'" class="hidden bg-white text-black text-[10px] font-black px-6 py-2.5 rounded-full uppercase hover:bg-red-600 hover:text-white transition-all">Create New</button>
+        </div>
+    </nav>
+
+    <main class="max-w-7xl mx-auto px-6 py-10">
+        <div id="managerPanel" class="hidden grid grid-cols-2 lg:grid-cols-4 gap-4 mb-10">
+            <div class="glass-card p-5 rounded-3xl">
+                <p class="text-[9px] font-black text-slate-500 uppercase">Compliance Status</p>
+                <p id="complianceText" class="text-xl font-black italic text-green-500">SECURE</p>
+            </div>
+            <div class="glass-card p-5 rounded-3xl">
+                <p class="text-[9px] font-black text-slate-500 uppercase">Awaiting Review</p>
+                <p id="draftCount" class="text-xl font-black italic">0</p>
+            </div>
+            <div class="glass-card p-5 rounded-3xl">
+                <p class="text-[9px] font-black text-slate-500 uppercase">Active Assets</p>
+                <p id="appCount" class="text-xl font-black italic text-blue-500">0</p>
+            </div>
+            <div class="glass-card p-5 rounded-3xl">
+                <p class="text-[9px] font-black text-slate-500 uppercase">Database</p>
+                <p class="text-xl font-black italic text-green-500 uppercase">Online</p>
+            </div>
+        </div>
+
+        <div class="glass-card p-6 rounded-[32px] mb-10 flex flex-col lg:flex-row gap-6 items-center justify-between">
+            <div class="flex gap-8">
+                <button id="tabDrafts" onclick="switchTab('drafts')" class="tab-btn tab-active">Drafts</button>
+                <button id="tabApproved" onclick="switchTab('approved')" class="tab-btn">Approved</button>
+            </div>
+            
+            <div class="flex flex-wrap gap-2 justify-end items-center">
+                <select id="filterFacility" onchange="renderArchive()" class="filter-select px-3 py-2 outline-none"><option value="">All Facilities</option></select>
+                <select id="filterLocation" onchange="renderArchive()" class="filter-select px-3 py-2 outline-none"><option value="">All Locations</option></select>
+                <select id="filterAuthor" onchange="renderArchive()" class="filter-select px-3 py-2 outline-none"><option value="">All Authors</option></select>
+                
+                <input type="text" id="search" oninput="renderArchive()" placeholder="ID SEARCH..." class="bg-white/5 border border-white/10 p-2 rounded-xl text-[10px] outline-none focus:border-red-600 w-32 text-white uppercase">
+            </div>
+        </div>
+
+        <div id="archiveList" class="grid grid-cols-1 gap-4"></div>
+    </main>
+
+    <script>
+        let currentTab = 'drafts';
+        const role = sessionStorage.getItem("loto_user_role");
+        const orgId = sessionStorage.getItem("loto_org_id");
+
+        function switchTab(t) {
+            currentTab = t;
+            document.getElementById('tabDrafts').classList.toggle('tab-active', t === 'drafts');
+            document.getElementById('tabApproved').classList.toggle('tab-active', t === 'approved');
+            renderArchive();
+        }
+
+        function checkCompliance(dateStr) {
+            if(!dateStr) return true;
+            const diffDays = Math.ceil(Math.abs(new Date() - new Date(dateStr)) / (1000 * 60 * 60 * 24));
+            return diffDays < 365;
+        }
+
+        function populateFilters(allData) {
+            const facs = [...new Set(allData.map(i => i.facility).filter(Boolean))];
+            const locs = [...new Set(allData.map(i => i.location).filter(Boolean))];
+            const auths = [...new Set(allData.map(i => i.author).filter(Boolean))];
+
+            updateDropdown('filterFacility', facs, 'All Facilities');
+            updateDropdown('filterLocation', locs, 'All Locations');
+            updateDropdown('filterAuthor', auths, 'All Authors');
+        }
+
+        function updateDropdown(id, items, defText) {
+            const el = document.getElementById(id);
+            const val = el.value;
+            el.innerHTML = `<option value="">${defText}</option>` + 
+                items.map(i => `<option value="${i}" ${i === val ? 'selected' : ''}>${i}</option>`).join('');
+        }
+
+        function renderArchive() {
+            const list = document.getElementById('archiveList');
+            const query = document.getElementById('search').value.toLowerCase();
+            const fFac = document.getElementById('filterFacility').value;
+            const fLoc = document.getElementById('filterLocation').value;
+            const fAuth = document.getElementById('filterAuthor').value;
+            
+            const dbFull = JSON.parse(localStorage.getItem('loto_enterprise_db') || '{}');
+            const db = dbFull[orgId];
+            if(!db) return;
+
+            let data = db.inventory[currentTab];
+            populateFilters(db.inventory.drafts.concat(db.inventory.approved));
+
+            if(fFac) data = data.filter(i => i.facility === fFac);
+            if(fLoc) data = data.filter(i => i.location === fLoc);
+            if(fAuth) data = data.filter(i => i.author === fAuth);
+            if(query) data = data.filter(i => i.id.toLowerCase().includes(query));
+
+            if(role === 'Manager') {
+                document.getElementById('managerPanel').classList.remove('hidden');
+                document.getElementById('draftCount').innerText = db.inventory.drafts.length;
+                document.getElementById('appCount').innerText = db.inventory.approved.length;
+                const expiredCount = db.inventory.approved.filter(i => !checkCompliance(i.date)).length;
+                document.getElementById('complianceText').innerText = expiredCount > 0 ? `${expiredCount} OVERDUE` : "VALID";
+                document.getElementById('complianceText').className = expiredCount > 0 ? "text-xl font-black italic text-red-500" : "text-xl font-black italic text-green-500";
+            }
+
+            if(role !== 'User') document.getElementById('createBtn').classList.remove('hidden');
+
+            list.innerHTML = data.length ? '' : `<div class="p-20 text-center glass-card rounded-[40px] text-slate-500 font-black uppercase text-[10px]">Empty Archive</div>`;
+
+            data.forEach(item => {
+                const isValid = checkCompliance(item.date);
+                
+                // MENTION COUNT OF LOTO DEVICES
+                const deviceCount = item.steps.reduce((sum, step) => sum + (step.devices ? step.devices.length : 0), 0);
+
+                const card = document.createElement('div');
+                card.className = `glass-card p-6 md:p-8 rounded-[32px] flex flex-col md:flex-row justify-between items-center gap-6 ${!isValid ? 'expired-card' : ''}`;
+                
+                card.innerHTML = `
+                    <div class="flex-1 w-full">
+                        <div class="flex items-center gap-3 mb-3">
+                            <span class="text-[10px] font-mono font-black text-red-500 tracking-tighter bg-red-500/10 px-2 py-0.5 rounded">${item.id}</span>
+                            <span class="bg-blue-600/10 text-blue-400 text-[8px] font-black px-2 py-0.5 rounded border border-blue-500/20 uppercase">📦 ${deviceCount} DEVICES</span>
+                            ${!isValid ? '<span class="bg-red-600 text-white text-[7px] font-black px-2 py-0.5 rounded uppercase pulse">⚠️ Audit Required</span>' : ''}
+                        </div>
+                        <h3 class="text-2xl font-black uppercase italic tracking-tighter leading-none mb-2 text-white">${item.description}</h3>
+                        <div class="flex flex-wrap gap-x-4 gap-y-1 text-[9px] font-bold text-slate-500 uppercase tracking-widest">
+                            <span>FAC: ${item.facility}</span>
+                            <span>LOC: ${item.location}</span>
+                            <span>BY: ${item.author}</span>
+                            <span class="${!isValid ? 'text-red-500' : ''}">${item.date}</span>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-3">
+                        ${currentTab === 'approved' ? `
+                            <button onclick="triggerPrint('${item.id}', 'full')" class="bg-red-600/10 text-red-500 text-[9px] font-black px-4 py-2 rounded-xl border border-red-600/20 uppercase transition-all hover:bg-red-600 hover:text-white">PDF</button>
+                            <button onclick="triggerPrint('${item.id}', 'tags')" class="bg-blue-600/10 text-blue-400 text-[9px] font-black px-4 py-2 rounded-xl border border-blue-600/20 uppercase transition-all hover:bg-blue-600 hover:text-white">Tags</button>
+                        ` : ''}
+                        <button onclick="recallToEngine('${item.id}')" class="${role === 'User' ? 'hidden' : ''} bg-white text-black text-[9px] font-black px-5 py-2.5 rounded-xl uppercase hover:bg-red-600 hover:text-white transition-all">Recall</button>
+                        ${currentTab === 'drafts' && role === 'Manager' ? `<button onclick="approveDraft('${item.id}')" class="bg-green-600 text-white text-[9px] font-black px-5 py-2.5 rounded-xl uppercase">Approve</button>` : ''}
+                        ${(role === 'Manager' || (currentTab === 'drafts' && role === 'Officer')) ? `<button onclick="deleteRecord('${item.id}')" class="w-10 h-10 flex items-center justify-center rounded-xl bg-red-600/10 text-red-500 font-black hover:bg-red-600 hover:text-white transition-all">&times;</button>` : ''}
+                    </div>
+                `;
+                list.appendChild(card);
+            });
+        }
+
+        function approveDraft(id) {
+            let db = JSON.parse(localStorage.getItem('loto_enterprise_db'));
+            const item = db[orgId].inventory.drafts.find(d => d.id === id);
+            db[orgId].inventory.approved.unshift(item);
+            db[orgId].inventory.drafts = db[orgId].inventory.drafts.filter(d => d.id !== id);
+            localStorage.setItem('loto_enterprise_db', JSON.stringify(db));
+            renderArchive();
+        }
+
+        function deleteRecord(id) {
+            if(!confirm(`Delete record ${id}?`)) return;
+            let db = JSON.parse(localStorage.getItem('loto_enterprise_db'));
+            db[orgId].inventory[currentTab] = db[orgId].inventory[currentTab].filter(p => p.id !== id);
+            localStorage.setItem('loto_enterprise_db', JSON.stringify(db));
+            renderArchive();
+        }
+
+        function showHistory(id) {
+            const db = JSON.parse(localStorage.getItem('loto_enterprise_db'))[orgId];
+            const item = db.inventory[currentTab].find(p => p.id === id);
+            document.getElementById('historyContent').innerHTML = item.history.map(h => `
+                <div class="bg-white/5 p-4 rounded-2xl border border-white/5">
+                    <p class="text-[9px] font-black text-red-500 uppercase">${h.date}</p>
+                    <p class="text-sm font-black italic uppercase text-white">${h.user}</p>
+                    <p class="text-xs text-slate-400 italic">"${h.note}"</p>
+                </div>
+            `).reverse().join('');
+            document.getElementById('historyModal').style.display = 'flex';
+        }
+
+        function triggerPrint(id, mode) {
+            sessionStorage.setItem('recall_id', id);
+            sessionStorage.setItem('recall_tab', 'approved');
+            sessionStorage.setItem(mode === 'full' ? 'auto_print_full' : 'auto_print_tags', 'true');
+            window.location.href = 'index.html';
+        }
+
+        function recallToEngine(id) {
+            sessionStorage.setItem('recall_id', id);
+            sessionStorage.setItem('recall_tab', currentTab);
+            window.location.href = 'index.html';
+        }
+
+        window.onload = renderArchive;
+    </script>
+</body>
+</html>

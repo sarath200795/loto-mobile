@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Enterprise Signup - LOTO PRO</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap');
+        body { font-family: 'Inter', sans-serif; background-color: #0f172a; }
+        .glass { background: rgba(255, 255, 255, 0.03); backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.1); }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col items-center justify-center p-6">
+    <div class="max-w-md w-full glass p-10 rounded-[40px] shadow-2xl">
+        <div class="text-center mb-8">
+            <h1 class="text-3xl font-black text-white italic tracking-tighter uppercase">Registration</h1>
+            <p class="text-slate-500 text-[10px] font-bold uppercase tracking-[0.2em] mt-2">Enterprise Access Control</p>
+        </div>
+        <form id="signupForm" class="space-y-4">
+            <input type="text" id="orgId" required placeholder="Organization ID (e.g. PLANT-01)" class="w-full bg-slate-800/50 border border-slate-700 p-4 rounded-2xl text-white outline-none focus:border-red-600 transition">
+            <input type="text" id="newName" required placeholder="Full Personnel Name" class="w-full bg-slate-800/50 border border-slate-700 p-4 rounded-2xl text-white outline-none focus:border-red-600 transition">
+            <input type="text" id="newUsername" required placeholder="Username" class="w-full bg-slate-800/50 border border-slate-700 p-4 rounded-2xl text-white outline-none focus:border-red-600 transition">
+            <select id="userRole" class="w-full bg-slate-800/50 border border-slate-700 p-4 rounded-2xl text-slate-400 outline-none focus:border-red-600 transition">
+                <option value="User">User (View Only)</option>
+                <option value="Officer">Safety Officer (Generate/Recall)</option>
+                <option value="Manager">Safety Manager (Approve/Delete)</option>
+            </select>
+            <input type="password" id="newPassword" required placeholder="Access Key" class="w-full bg-slate-800/50 border border-slate-700 p-4 rounded-2xl text-white outline-none focus:border-red-600 transition">
+            <button type="submit" class="w-full bg-white text-slate-900 font-black py-4 rounded-2xl uppercase italic tracking-widest shadow-lg hover:bg-red-600 hover:text-white transition-all">Create Account</button>
+        </form>
+        <p class="text-slate-500 text-xs mt-6 text-center">Existing Personnel? <a href="login.html" class="text-red-500 font-bold uppercase">Login</a></p>
+    </div>
+    <script>
+        document.getElementById('signupForm').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const org = document.getElementById('orgId').value.toUpperCase().replace(/\s+/g, '');
+            const user = {
+                name: document.getElementById('newName').value,
+                username: document.getElementById('newUsername').value.toLowerCase(),
+                role: document.getElementById('userRole').value,
+                password: document.getElementById('newPassword').value
+            };
+            let db = JSON.parse(localStorage.getItem('loto_enterprise_db') || '{}');
+            if(!db[org]) db[org] = { users: [], inventory: { drafts: [], approved: [] } };
+            if(db[org].users.find(u => u.username === user.username)) return alert("User already exists in this Org.");
+            db[org].users.push(user);
+            localStorage.setItem('loto_enterprise_db', JSON.stringify(db));
+            alert("Registered successfully!");
+            window.location.href = "login.html";
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8"><title>Dashboard - LOTO PRO</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body { font-family: 'Inter', sans-serif; background-color: #020617; color: white; }
+        .stat-card { background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 24px; padding: 24px; }
+        .bar-container { background: rgba(255,255,255,0.05); height: 8px; border-radius: 10px; overflow: hidden; }
+        .bar-fill { background: #3b82f6; height: 100%; transition: width 1s ease-in-out; }
+    </style>
+</head>
+<body class="p-8">
+    <header class="max-w-7xl mx-auto mb-12 flex justify-between items-end">
+        <div>
+            <h1 class="text-4xl font-black italic uppercase tracking-tighter">LOTO<span class="text-red-600">PRO</span> DASHBOARD</h1>
+            <p class="text-slate-500 font-bold uppercase text-[10px] tracking-widest mt-2">Cumulative Hardware & Asset Analytics</p>
+        </div>
+        <button onclick="window.location.href='inventory.html'" class="bg-white/10 px-6 py-2 rounded-full text-[10px] font-black uppercase hover:bg-white/20 transition-all">Back to Archive</button>
+    </header>
+
+    <main class="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div class="stat-card flex flex-col justify-center items-center text-center">
+            <p class="text-slate-500 font-black text-[10px] uppercase mb-2">Total Hardware Deployment</p>
+            <h2 id="totalDevices" class="text-7xl font-black italic text-blue-500">0</h2>
+            <p class="text-slate-400 text-xs mt-2 font-bold">Devices Across All Procedures</p>
+        </div>
+
+        <div class="stat-card lg:col-span-2">
+            <p class="text-slate-500 font-black text-[10px] uppercase mb-6 tracking-widest">Segregated Hardware Inventory</p>
+            <div id="segregatedList" class="space-y-6">
+                </div>
+        </div>
+    </main>
+
+    <script>
+        function loadDashboard() {
+            const orgId = sessionStorage.getItem("loto_org_id");
+            const db = JSON.parse(localStorage.getItem('loto_enterprise_db'))[orgId];
+            const allProcedures = db.inventory.approved;
+
+            let totalCount = 0;
+            const deviceMap = {};
+
+            allProcedures.forEach(proc => {
+                proc.steps.forEach(step => {
+                    if (step.devices) {
+                        step.devices.forEach(device => {
+                            totalCount++;
+                            deviceMap[device] = (deviceMap[device] || 0) + 1;
+                        });
+                    }
+                });
+            });
+
+            document.getElementById('totalDevices').innerText = totalCount;
+
+            const segregatedList = document.getElementById('segregatedList');
+            segregatedList.innerHTML = '';
+
+            // Sort devices by highest count
+            Object.entries(deviceMap).sort((a,b) => b[1] - a[1]).forEach(([name, count]) => {
+                const percentage = (count / totalCount) * 100;
+                segregatedList.innerHTML += `
+                    <div>
+                        <div class="flex justify-between text-[10px] font-black uppercase mb-2">
+                            <span>${name}</span>
+                            <span class="text-blue-400">${count} Units</span>
+                        </div>
+                        <div class="bar-container">
+                            <div class="bar-fill" style="width: ${percentage}%"></div>
+                        </div>
+                    </div>
+                `;
+            });
+        }
+        window.onload = loadDashboard;
+    </script>
+</body>
+</html>

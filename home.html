@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mission Control - LOTO PRO</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap');
+        body { font-family: 'Inter', sans-serif; background-color: #020617; color: white; overflow-x: hidden; }
+        
+        .bg-mesh {
+            background: 
+                radial-gradient(circle at 0% 0%, rgba(220, 38, 38, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 100% 100%, rgba(37, 99, 235, 0.1) 0%, transparent 50%),
+                #020617;
+        }
+
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .glass-panel:hover {
+            background: rgba(255, 255, 255, 0.06);
+            border-color: rgba(239, 68, 68, 0.4);
+            transform: translateY(-5px);
+        }
+
+        @keyframes pulse-red {
+            0%, 100% { box-shadow: 0 0 20px rgba(220, 38, 38, 0); }
+            50% { box-shadow: 0 0 30px rgba(220, 38, 38, 0.3); }
+        }
+        .pulse-critical { animation: pulse-red 3s infinite; }
+    </style>
+</head>
+<body class="bg-mesh min-h-screen">
+    <script>
+        if (sessionStorage.getItem("loto_auth") !== "true") { window.location.href = "login.html"; }
+    </script>
+
+    <nav class="p-6 flex justify-between items-center max-w-7xl mx-auto">
+        <div class="flex items-center gap-3">
+            <div class="w-10 h-10 bg-red-600 rounded-xl flex items-center justify-center font-black italic">LP</div>
+            <h1 class="text-xl font-black italic tracking-tighter hidden sm:block uppercase">LOTO<span class="text-red-600">PRO</span></h1>
+        </div>
+        <div class="flex items-center gap-4">
+            <div class="text-right border-r border-white/10 pr-4 mr-2 hidden md:block">
+                <p id="userName" class="text-xs font-black uppercase tracking-widest"></p>
+                <p id="userRole" class="text-[9px] font-bold text-red-500 uppercase tracking-widest"></p>
+            </div>
+            <button onclick="sessionStorage.clear(); window.location.href='login.html'" class="text-[10px] font-black uppercase tracking-widest py-2 px-5 rounded-full border border-white/10 hover:bg-white hover:text-black transition-all">Logout</button>
+        </div>
+    </nav>
+
+    <main class="max-w-7xl mx-auto px-6 py-10">
+        
+        <div class="grid lg:grid-cols-3 gap-8 mb-12">
+            <div class="lg:col-span-2">
+                <h2 id="greeting" class="text-red-500 font-black uppercase text-[10px] tracking-[0.4em] mb-4">Establishing Uplink...</h2>
+                <h3 class="text-5xl md:text-7xl font-black italic leading-none uppercase tracking-tighter mb-6">
+                    LOTO <br><span class="text-transparent bg-clip-text bg-gradient-to-r from-red-600 to-blue-400">Pro Hub</span>
+                </h3>
+            </div>
+            
+            <div class="glass-panel p-8 rounded-[32px] flex flex-col justify-center relative overflow-hidden group">
+                <div class="absolute -top-4 -right-4 w-24 h-24 bg-red-600/10 rounded-full blur-2xl group-hover:bg-red-600/20 transition-all"></div>
+                <p class="text-[9px] font-black text-red-500 uppercase tracking-widest mb-3">Safety Intelligence</p>
+                <p id="safetyTip" class="text-sm font-medium leading-relaxed italic text-slate-300">"Never assume energy is off. Always verify isolation personally before work begins."</p>
+                <button onclick="rotateTip()" class="mt-4 text-[9px] font-black uppercase text-slate-500 hover:text-white transition-colors">Next Tip ↻</button>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-6 mb-12">
+            <div class="glass-panel p-6 rounded-3xl">
+                <p class="text-[9px] font-black text-slate-500 uppercase tracking-widest mb-2">Verified Records</p>
+                <div class="flex items-end gap-2">
+                    <span id="statApproved" class="text-4xl font-black italic">0</span>
+                    <span class="text-green-500 text-[10px] font-bold mb-1 uppercase tracking-widest">Active</span>
+                </div>
+            </div>
+            <div id="pendingBox" class="glass-panel p-6 rounded-3xl border-red-900/20">
+                <p class="text-[9px] font-black text-slate-500 uppercase tracking-widest mb-2">Awaiting Review</p>
+                <div class="flex items-end gap-2">
+                    <span id="statPending" class="text-4xl font-black italic text-red-500">0</span>
+                    <span class="text-red-500/50 text-[10px] font-bold mb-1 uppercase tracking-widest">Drafts</span>
+                </div>
+            </div>
+            <div class="glass-panel p-6 rounded-3xl">
+                <p class="text-[9px] font-black text-slate-500 uppercase tracking-widest mb-2">Organization</p>
+                <p id="statOrg" class="text-2xl font-black italic text-blue-500 uppercase truncate">---</p>
+            </div>
+            <div class="glass-panel p-6 rounded-3xl">
+                <p class="text-[9px] font-black text-slate-500 uppercase tracking-widest mb-2">Current Identity</p>
+                <p id="statRole" class="text-2xl font-black italic text-white uppercase tracking-tighter">---</p>
+            </div>
+        </div>
+
+        <div class="grid md:grid-cols-2 gap-8">
+            <div id="genCard" onclick="window.location.href='index.html'" class="glass-panel p-10 rounded-[40px] cursor-pointer group hidden">
+                <div class="w-14 h-14 bg-red-600 rounded-2xl flex items-center justify-center mb-6 group-hover:rotate-12 transition-all">
+                    <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M12 4v16m8-8H4"></path></svg>
+                </div>
+                <h4 class="text-3xl font-black uppercase italic tracking-tighter mb-3">Generation Engine</h4>
+                <p class="text-slate-400 text-sm leading-relaxed">Execute new procedures, capture machine-specific visual isolation tags, and compile documentation.</p>
+                <div class="mt-8 flex items-center gap-2 text-red-500 font-black text-[10px] uppercase tracking-widest">
+                    Initialize <span class="group-hover:translate-x-2 transition-transform">→</span>
+                </div>
+            </div>
+
+            <div onclick="window.location.href='inventory.html'" class="glass-panel p-10 rounded-[40px] cursor-pointer group">
+                <div class="w-14 h-14 bg-blue-600 rounded-2xl flex items-center justify-center mb-6 group-hover:rotate-12 transition-all">
+                    <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path></svg>
+                </div>
+                <h4 class="text-3xl font-black uppercase italic tracking-tighter mb-3">Enterprise Archive</h4>
+                <p class="text-slate-400 text-sm leading-relaxed">Central repository for all energy isolation records, historical logs, and manager approval workflows.</p>
+                <div class="mt-8 flex items-center gap-2 text-blue-500 font-black text-[10px] uppercase tracking-widest">
+                    Access Database <span class="group-hover:translate-x-2 transition-transform">→</span>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        const tips = [
+            "Never assume energy is off. Always verify isolation personally before work begins.",
+            "Use one lock and one key per person. Never share your keys with anyone.",
+            "Always identify secondary energy sources like stored pressure, springs, or capacitors.",
+            "Notify all affected employees before you begin the lockout/tagout process.",
+            "Confirm zero energy state by attempting to start the machine after locking out.",
+            "If a lock is damaged or a tag is unreadable, stop work and replace it immediately.",
+            "A near-miss reported today is an accident prevented tomorrow. Stay alert.",
+            "Energy isolation is a team effort. If you see an unsafe act, speak up."
+        ];
+
+        function rotateTip() {
+            const tipEl = document.getElementById('safetyTip');
+            tipEl.style.opacity = 0;
+            setTimeout(() => {
+                tipEl.innerText = `"${tips[Math.floor(Math.random() * tips.length)]}"`;
+                tipEl.style.opacity = 1;
+            }, 300);
+        }
+
+        const role = sessionStorage.getItem("loto_user_role");
+        const name = sessionStorage.getItem("loto_user_name");
+        const orgId = sessionStorage.getItem("loto_org_id");
+
+        document.getElementById('userName').innerText = name;
+        document.getElementById('userRole').innerText = role;
+        document.getElementById('statRole').innerText = role;
+        document.getElementById('statOrg').innerText = orgId;
+
+        const hour = new Date().getHours();
+        let greeting = "Good Evening";
+        if(hour < 12) greeting = "Good Morning";
+        else if(hour < 18) greeting = "Good Afternoon";
+        document.getElementById('greeting').innerText = `${greeting}, ${name.split(' ')[0]}`;
+
+        if(role !== 'User') document.getElementById('genCard').classList.remove('hidden');
+
+        try {
+            const fullDb = JSON.parse(localStorage.getItem('loto_enterprise_db') || '{}');
+            const data = fullDb[orgId].inventory;
+            document.getElementById('statApproved').innerText = data.approved.length;
+            document.getElementById('statPending').innerText = data.drafts.length;
+            if(data.drafts.length > 0) document.getElementById('pendingBox').classList.add('pulse-critical');
+        } catch(e) {}
+
+        setInterval(rotateTip, 10000);
+    </script>
+</body>
+</html>

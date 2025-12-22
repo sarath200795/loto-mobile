@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - LOTO PRO</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap');
+        body { font-family: 'Inter', sans-serif; background-color: #0f172a; }
+        .glass { background: rgba(255, 255, 255, 0.03); backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.1); }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col">
+    <nav class="p-6 w-full flex justify-between items-center max-w-6xl mx-auto">
+        <h1 class="text-xl font-black text-white italic tracking-tighter">LOTO<span class="text-red-600">PRO</span></h1>
+        <div class="flex gap-6">
+            <a href="signup.html" class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Register</a>
+            <a href="privacy.html" target="_blank" class="text-[10px] font-black text-slate-400 uppercase tracking-widest underline underline-offset-4">Privacy</a>
+        </div>
+    </nav>
+    <div class="flex-grow flex items-center justify-center p-6">
+        <div class="max-w-md w-full glass p-10 rounded-[40px] shadow-2xl">
+            <form id="loginForm" class="space-y-6">
+                <input type="text" id="orgId" placeholder="Organization ID" required class="w-full bg-slate-800/50 border border-slate-700 p-4 rounded-2xl text-white outline-none focus:border-red-600 transition">
+                <input type="text" id="username" placeholder="Username" required class="w-full bg-slate-800/50 border border-slate-700 p-4 rounded-2xl text-white outline-none focus:border-red-600 transition">
+                <input type="password" id="password" placeholder="Password" required class="w-full bg-slate-800/50 border border-slate-700 p-4 rounded-2xl text-white outline-none focus:border-red-600 transition">
+                <button type="submit" class="w-full bg-red-600 text-white font-black py-4 rounded-2xl uppercase italic tracking-widest shadow-lg">Authorize</button>
+            </form>
+        </div>
+    </div>
+    <script>
+        document.getElementById('loginForm').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const org = document.getElementById('orgId').value.toUpperCase();
+            const u = document.getElementById('username').value.toLowerCase();
+            const p = document.getElementById('password').value;
+            const db = JSON.parse(localStorage.getItem('loto_enterprise_db') || '{}');
+            if(!db[org]) return alert("Organization not found.");
+            const user = db[org].users.find(user => user.username === u && user.password === p);
+            if (user) {
+                sessionStorage.setItem("loto_auth", "true");
+                sessionStorage.setItem("loto_org_id", org);
+                sessionStorage.setItem("loto_user_role", user.role);
+                sessionStorage.setItem("loto_user_name", user.name);
+                window.location.href = "home.html";
+            } else { alert("Invalid Credentials"); }
+        });
+    </script>
+</body>
+</html>
