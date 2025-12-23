@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Owner Panel - LOTO PRO</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>body { font-family: 'Inter', sans-serif; background: #020617; color: white; }</style>
+</head>
+<body class="p-10">
+    <div class="max-w-4xl mx-auto">
+        <h1 class="text-4xl font-black italic uppercase mb-10">Admin <span class="text-red-600">Authorization</span></h1>
+        
+        <div class="bg-white/5 border border-white/10 rounded-[40px] p-10">
+            <h2 class="text-xs font-black text-slate-500 uppercase tracking-widest mb-6">Pending Signup Requests</h2>
+            <div id="requestList" class="space-y-4"></div>
+        </div>
+    </div>
+
+    <script>
+        function renderRequests() {
+            const list = document.getElementById('requestList');
+            const db = JSON.parse(localStorage.getItem('loto_enterprise_db'));
+            const pending = db.system_audit.pending_users || [];
+
+            list.innerHTML = pending.length ? '' : '<p class="text-slate-600 font-black uppercase text-xs">No pending requests found.</p>';
+
+            pending.forEach((u, index) => {
+                const div = document.createElement('div');
+                div.className = "flex justify-between items-center p-6 bg-white/5 rounded-3xl border border-white/5";
+                div.innerHTML = `
+                    <div>
+                        <p class="font-black uppercase text-white">${u.name} <span class="text-red-500 text-[10px]">(${u.role})</span></p>
+                        <p class="text-[10px] text-slate-500 uppercase tracking-tighter">Org: ${u.orgId} | Requested: ${u.requestDate}</p>
+                    </div>
+                    <div class="flex gap-2">
+                        <button onclick="approve(${index})" class="bg-green-600 px-6 py-2 rounded-xl text-[10px] font-black uppercase">Authorize</button>
+                        <button onclick="reject(${index})" class="bg-red-600/20 text-red-500 px-6 py-2 rounded-xl text-[10px] font-black uppercase">Deny</button>
+                    </div>
+                `;
+                list.appendChild(div);
+            });
+        }
+
+        function approve(index) {
+            let db = JSON.parse(localStorage.getItem('loto_enterprise_db'));
+            const user = db.system_audit.pending_users[index];
+            user.isAuthorized = true;
+
+            // Initialize Org if doesn't exist
+            if(!db[user.orgId]) {
+                db[user.orgId] = { users: [], inventory: { drafts: [], approved: [] } };
+            }
+            
+            db[user.orgId].users.push(user);
+            db.system_audit.pending_users.splice(index, 1);
+            localStorage.setItem('loto_enterprise_db', JSON.stringify(db));
+            renderRequests();
+        }
+
+        window.onload = renderRequests;
+    </script>
+</body>
+</html>

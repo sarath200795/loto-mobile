@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Login - LOTO PRO Enterprise</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body { font-family: 'Inter', sans-serif; background: #020617; color: white; }
+        .auth-card { background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 32px; backdrop-filter: blur(10px); }
+        input, select { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: white; padding: 12px; border-radius: 12px; width: 100%; outline: none; }
+    </style>
+</head>
+<body class="min-h-screen flex items-center justify-center p-6">
+    <div class="auth-card w-full max-w-md p-10 shadow-2xl">
+        <div id="loginSection">
+            <h1 class="text-3xl font-black italic uppercase mb-8 tracking-tighter text-center">LOTO<span class="text-red-600">PRO</span> LOGIN</h1>
+            <form onsubmit="handleLogin(event)" class="space-y-4">
+                <input type="text" id="loginOrg" placeholder="ORGANIZATION ID" required>
+                <input type="email" id="loginEmail" placeholder="EMAIL ADDRESS" required>
+                <button type="submit" class="w-full bg-red-600 py-4 rounded-2xl font-black uppercase tracking-widest text-xs mt-4">Sign In</button>
+            </form>
+            <p class="mt-6 text-center text-xs text-slate-500 font-bold uppercase cursor-pointer" onclick="toggleAuth()">New User? Request Access</p>
+        </div>
+
+        <div id="signupSection" class="hidden">
+            <h1 class="text-2xl font-black italic uppercase mb-2 tracking-tighter text-center text-red-600">Request Access</h1>
+            <p class="text-[10px] text-slate-500 text-center mb-8 font-bold uppercase italic">Awaiting Owner Authorization</p>
+            <form onsubmit="handleSignUp(event)" class="space-y-4">
+                <input type="text" id="regOrg" placeholder="ORGANIZATION ID" required>
+                <input type="text" id="regName" placeholder="FULL NAME" required>
+                <input type="email" id="regEmail" placeholder="EMAIL ADDRESS" required>
+                <select id="regRole">
+                    <option value="User">Technician (User)</option>
+                    <option value="Manager">Manager (Approver)</option>
+                </select>
+                <button type="submit" class="w-full bg-white text-black py-4 rounded-2xl font-black uppercase tracking-widest text-xs mt-4">Submit Request</button>
+            </form>
+            <p class="mt-6 text-center text-xs text-slate-500 font-bold uppercase cursor-pointer" onclick="toggleAuth()">Back to Login</p>
+        </div>
+    </div>
+
+    <script>
+        // Initialize DB structure if first time
+        if(!localStorage.getItem('loto_enterprise_db')) {
+            localStorage.setItem('loto_enterprise_db', JSON.stringify({ system_audit: { pending_users: [] } }));
+        }
+
+        function toggleAuth() {
+            document.getElementById('loginSection').classList.toggle('hidden');
+            document.getElementById('signupSection').classList.toggle('hidden');
+        }
+
+        function handleSignUp(e) {
+            e.preventDefault();
+            const newUser = {
+                orgId: document.getElementById('regOrg').value.trim().toUpperCase(),
+                name: document.getElementById('regName').value,
+                email: document.getElementById('regEmail').value,
+                role: document.getElementById('regRole').value,
+                isAuthorized: false,
+                requestDate: new Date().toLocaleString()
+            };
+
+            let db = JSON.parse(localStorage.getItem('loto_enterprise_db'));
+            db.system_audit.pending_users.push(newUser);
+            localStorage.setItem('loto_enterprise_db', JSON.stringify(db));
+            
+            alert("Request Sent! Access is blocked until the Facility Owner authorizes this account.");
+            toggleAuth();
+        }
+
+        function handleLogin(e) {
+            e.preventDefault();
+            const org = document.getElementById('loginOrg').value.trim().toUpperCase();
+            const email = document.getElementById('loginEmail').value;
+            const db = JSON.parse(localStorage.getItem('loto_enterprise_db'));
+
+            // Check if account is in the authorized Org list
+            if (db[org] && db[org].users) {
+                const user = db[org].users.find(u => u.email === email && u.isAuthorized === true);
+                if (user) {
+                    sessionStorage.setItem("loto_user_role", user.role);
+                    sessionStorage.setItem("loto_org_id", org);
+                    sessionStorage.setItem("loto_user_name", user.name);
+                    window.location.href = 'home.html';
+                    return;
+                }
+            }
+            alert("Login Failed: Account not found or awaiting Owner authorization.");
+        }
+    </script>
+</body>
+</html>
