@@ -3,96 +3,90 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Engine - LOTO PRO Enterprise</title>
+    <title>Engine - LOTO PRO</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrious/4.0.2/qrious.min.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap');
-        body { font-family: 'Inter', sans-serif; background-color: #020617; color: white; padding-bottom: 140px; }
+        body { font-family: 'Inter', sans-serif; background-color: #020617; color: white; padding-bottom: 140px; overflow-x: hidden; }
         .bg-mesh { background: radial-gradient(circle at 0% 0%, rgba(220, 38, 38, 0.05) 0%, transparent 50%), radial-gradient(circle at 100% 100%, rgba(37, 99, 235, 0.05) 0%, transparent 50%), #020617; }
-        .glass-card { background: rgba(255, 255, 255, 0.03); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 32px; }
-        .input-glass { background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); color: white; transition: 0.3s ease; }
-        .input-glass:focus { border-color: #ef4444; outline: none; background: rgba(255, 255, 255, 0.1); }
-        select.input-glass option { background-color: #0f172a; color: white; }
-        .step-card { border-left: 6px solid #1e293b; transition: 0.4s ease; position: relative; }
+        .glass-card { background: rgba(255, 255, 255, 0.03); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 32px; z-index: 10; position: relative; overflow: visible !important; }
+        .input-glass { background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); color: white; transition: 0.3s; width: 100%; outline: none; }
+        .input-glass:focus { border-color: #ef4444; background: rgba(255, 255, 255, 0.1); }
+        .chip { padding: 6px 12px; border-radius: 99px; font-size: 9px; font-weight: 800; cursor: pointer; border: 1px solid rgba(255,255,255,0.1); transition: 0.2s; white-space: nowrap; }
+        .hw-active { background: #3b82f6 !important; color: white !important; border-color: #3b82f6 !important; box-shadow: 0 0 10px rgba(59, 130, 246, 0.5); }
+        .rk-active { background: #f59e0b !important; color: white !important; border-color: #f59e0b !important; box-shadow: 0 0 10px rgba(245, 158, 11, 0.5); }
+        .step-card { border-left: 8px solid #1e293b; position: relative; overflow: visible !important; }
         .delete-btn { position: absolute; top: -12px; right: -12px; width: 32px; height: 32px; background: #ef4444; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 900; border: 3px solid #020617; z-index: 50; }
-        .chip { transition: 0.2s; cursor: pointer; user-select: none; font-size: 8px; font-weight: 800; text-transform: uppercase; border: 1px solid rgba(255,255,255,0.1); padding: 4px 10px; border-radius: 99px; }
-        .hw-active { background-color: #3b82f6; border-color: #3b82f6; color: white; }
-        .risk-active { background-color: #f59e0b; border-color: #f59e0b; color: white; }
-        ::-webkit-calendar-picker-indicator { filter: invert(1); }
+        select.input-glass option { background-color: #0f172a; color: white; }
     </style>
 </head>
 <body class="bg-mesh min-h-screen">
-    <nav class="sticky top-0 bg-slate-950/80 backdrop-blur-md p-4 mb-8 z-[100] border-b border-white/5 flex justify-between items-center">
-        <div onclick="window.location.href='home.html'" class="cursor-pointer flex items-center gap-3">
-            <div class="w-8 h-8 bg-red-600 rounded-lg flex items-center justify-center font-black italic text-white text-sm">LP</div>
-            <h1 class="text-xl font-black italic tracking-tighter uppercase text-white">LOTO<span class="text-red-600">PRO</span></h1>
+    <nav class="p-4 border-b border-white/5 flex justify-between items-center bg-slate-950/80 backdrop-blur-md sticky top-0 z-[100]">
+        <div onclick="window.location.href='home.html'" class="cursor-pointer flex items-center gap-2">
+            <div class="w-7 h-7 bg-red-600 rounded flex items-center justify-center font-black italic">LP</div>
+            <h1 class="text-lg font-black italic uppercase">LOTO<span class="text-red-600">PRO</span></h1>
         </div>
         <div class="flex gap-2">
-            <button onclick="resetEngine()" class="text-[10px] font-black text-slate-500 uppercase px-4 py-2 border border-white/10 rounded-full hover:bg-red-600 hover:text-white transition-all">Reset Engine</button>
-            <button onclick="window.location.href='inventory.html'" class="text-[10px] font-black text-blue-500 bg-blue-500/10 px-4 py-2 rounded-full border border-blue-500/20">Archive</button>
+            <button onclick="resetEngine()" class="text-[9px] font-black uppercase px-4 py-2 border border-white/10 rounded-full hover:bg-white/10">Reset</button>
+            <button onclick="window.location.href='inventory.html'" class="text-[9px] font-black text-blue-400 uppercase px-4 py-2 border border-blue-400/20 rounded-full hover:bg-blue-400/10">Archive</button>
         </div>
     </nav>
 
     <div class="p-4 max-w-lg mx-auto">
-        <div class="glass-card p-8 mb-10 space-y-5">
-            <div id="versionBadge" class="hidden bg-red-600 text-white text-[9px] font-black px-3 py-1 rounded-full w-fit uppercase mb-2">Revision Mode</div>
-            <div class="grid grid-cols-1 gap-4">
-                <div><label class="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1 block">Facility</label><input type="text" id="facility" oninput="updateID()" class="w-full input-glass p-4 rounded-2xl validate"></div>
-                <div class="grid grid-cols-2 gap-4">
-                    <div><label class="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1 block">Location</label><input type="text" id="location" oninput="updateID()" class="w-full input-glass p-4 rounded-2xl validate"></div>
-                    <div><label class="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1 block">Date</label><input type="date" id="revisedDate" class="w-full input-glass p-4 rounded-2xl validate"></div>
-                </div>
-                <div><label class="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1 block">Equipment Name</label><input type="text" id="description" oninput="updateID()" class="w-full input-glass p-4 rounded-2xl validate"></div>
-            </div>
-            <p id="displayID" class="text-xs font-mono font-black text-red-500 uppercase border-t border-white/5 pt-4">ID: PENDING</p>
+        <div class="glass-card p-8 mb-10 space-y-4">
+            <input type="text" id="facility" oninput="updateID()" placeholder="FACILITY NAME" class="input-glass p-4 rounded-2xl validate">
+            <input type="text" id="location" oninput="updateID()" placeholder="LOCATION (e.g. ROOM 101)" class="input-glass p-4 rounded-2xl validate">
+            <input type="date" id="revisedDate" class="input-glass p-4 rounded-2xl validate">
+            <input type="text" id="description" oninput="updateID()" placeholder="EQUIPMENT DESCRIPTION" class="input-glass p-4 rounded-2xl validate">
+            <p id="displayID" class="text-xs font-mono font-black text-red-500 uppercase">ID: PENDING</p>
         </div>
         <div id="points-list" class="space-y-12"></div>
     </div>
 
-    <div class="fixed bottom-0 left-0 right-0 p-6 bg-slate-950/90 backdrop-blur-xl flex gap-4 z-[1000] border-t border-white/10 shadow-2xl">
-        <button onclick="addNewPoint()" class="flex-1 bg-white text-black font-black py-4 rounded-2xl tracking-widest uppercase text-xs hover:bg-red-600 hover:text-white transition-all">+ Add Step</button>
-        <button onclick="saveProcedureData()" class="flex-1 bg-blue-600 text-white font-black py-4 rounded-2xl text-[10px] uppercase italic tracking-widest">Submit Draft</button>
-        <button onclick="validateAndGenerate()" class="flex-1 bg-red-600 text-white font-black py-4 rounded-2xl text-[10px] uppercase italic tracking-widest">PDF Export</button>
+    <div class="fixed bottom-0 left-0 right-0 p-6 bg-slate-950/90 backdrop-blur-xl flex gap-3 border-t border-white/10 z-[200]">
+        <button onclick="addNewPoint()" class="flex-1 bg-white text-black font-black py-4 rounded-2xl text-[10px] uppercase tracking-widest">+ Add Step</button>
+        <button onclick="saveProcedureData()" class="flex-1 bg-blue-600 text-white font-black py-4 rounded-2xl text-[10px] uppercase tracking-widest italic">Save Draft</button>
+        <button onclick="validateAndGenerate()" class="flex-1 bg-red-600 text-white font-black py-4 rounded-2xl text-[10px] uppercase tracking-widest italic">Export PDF</button>
     </div>
 
     <script>
         let uniqueIdCounter = 0, imageDataStore = {}, currentID = "", isEdit = false, oldHistory = [];
-        const energyConfig = { "Electrical": { code: "E", bg: [185, 28, 28] }, "Mechanical": { code: "M", bg: [30, 64, 175] }, "Compressed Air": { code: "CA", bg: [8, 145, 178] }, "Hydraulic": { code: "H", bg: [194, 65, 12] }, "Chemical": { code: "C", bg: [21, 128, 61] }, "Thermal": { code: "T", bg: [234, 88, 12] }, "Radiation": { code: "R", bg: [234, 179, 8] }, "Gas": { code: "G", bg: [71, 85, 105] }, "Gravity": { code: "P", bg: [126, 34, 206] } };
-        const hardwareOptions = ["Safety Padlock", "Lockout Hasp", "Breaker Lock", "Wall Switch Lock", "Plug Cover", "Ball Valve Lock", "Gate Valve Lock", "Butterfly Valve Lock", "Cable Lockout", "Pneumatic Disconnect", "Flange Blind", "Chain & Lock"];
-        const riskOptions = ["⚡ Arc Flash", "💥 High Pressure", "🔥 High Temp", "☣️ Chemical", "🏗️ Heavy Load", "🌪️ Pneumatic"];
+        const energyConfig = { 
+            "Electrical": { code: "E", bg: [185, 28, 28] }, 
+            "Mechanical": { code: "M", bg: [30, 64, 175] }, 
+            "Compressed Air": { code: "CA", bg: [8, 145, 178] }, 
+            "Hydraulic": { code: "H", bg: [194, 65, 12] },
+            "Chemical": { code: "C", bg: [21, 128, 61] },
+            "Gas": { code: "G", bg: [71, 85, 105] },
+            "Thermal": { code: "T", bg: [234, 88, 12] },
+            "Gravity": { code: "GR", bg: [126, 34, 206] }
+        };
+        const hardwareOptions = ["Safety Padlock", "Lockout Hasp", "Breaker Lockout", "Gate Valve Lock", "Ball Valve Lock", "Plug Cover", "Cable Lockout", "Pneumatic Plug Lock"];
+        const riskOptions = ["⚡ Arc Flash", "💥 High Pressure", "🔥 High Temp", "☣️ Chemical Risk", "🏗️ Heavy Load", "☢️ Radiation"];
 
-        function resetEngine() {
-            if (confirm('Wipe all current progress and reset engine to default?')) {
-                imageDataStore = {}; uniqueIdCounter = 0; isEdit = false; oldHistory = [];
-                sessionStorage.removeItem('recall_id');
-                sessionStorage.removeItem('recall_tab');
-                sessionStorage.removeItem('auto_print_full');
-                sessionStorage.removeItem('auto_print_tags');
-                window.location.reload();
-            }
-        }
-
-        function updateID() {
-            const f = document.getElementById('facility').value.trim().toUpperCase() || "S";
-            const l = document.getElementById('location').value.trim().toUpperCase() || "L";
-            const e = document.getElementById('description').value.trim().toUpperCase() || "E";
-            currentID = `${f}-${l}-${e}`.replace(/\s+/g, '');
-            document.getElementById('displayID').innerText = `ID: ${currentID}`;
+        function resetEngine() { if(confirm('Wipe progress and start fresh?')) { sessionStorage.clear(); window.location.reload(); } }
+        
+        function updateID() { 
+            const f = document.getElementById('facility').value.trim().toUpperCase() || "S"; 
+            const l = document.getElementById('location').value.trim().toUpperCase() || "L"; 
+            const e = document.getElementById('description').value.trim().toUpperCase() || "E"; 
+            currentID = `${f}-${l}-${e}`.replace(/\s+/g,''); 
+            document.getElementById('displayID').innerText = `ID: ${currentID}`; 
         }
 
         function toggleChip(id, type, val, btn) {
-            const storage = document.getElementById(`${type}-storage-${id}`);
+            let storage = document.getElementById(`${type}-storage-${id}`);
             let selected = storage.value ? storage.value.split(',') : [];
-            const activeClass = type === 'hw' ? 'hw-active' : 'risk-active';
-            if (selected.includes(val)) {
-                selected = selected.filter(v => v !== val);
-                btn.classList.remove(activeClass);
-            } else {
-                selected.push(val);
-                btn.classList.add(activeClass);
+            const activeClass = type === 'hw' ? 'hw-active' : 'rk-active';
+            if(selected.includes(val)) { 
+                selected = selected.filter(v => v !== val); 
+                btn.classList.remove(activeClass); 
+            } else { 
+                selected.push(val); 
+                btn.classList.add(activeClass); 
             }
             storage.value = selected.join(',');
         }
@@ -102,37 +96,36 @@
             const card = document.createElement('div');
             card.id = `step-container-${id}`; card.dataset.internalId = id;
             card.className = "glass-card step-card p-8";
-            
             const selHw = data ? (data.devices || []) : [];
-            const selRisks = data ? (data.risks || []) : [];
-
+            const selRk = data ? (data.risks || []) : [];
+            
             card.innerHTML = `
                 <button onclick="removePoint(${id})" class="delete-btn text-white">&times;</button>
-                <div class="flex justify-between items-center mb-6 border-b border-white/5 pb-4">
-                    <span class="font-black text-[10px] text-slate-500 uppercase italic">Isolation Point</span>
-                    <input type="text" id="tag-${id}" class="text-right font-mono font-bold text-red-500 bg-transparent outline-none" readonly>
+                <div class="flex justify-between items-center mb-4">
+                     <input type="text" id="tag-${id}" class="font-mono font-bold text-red-500 bg-transparent outline-none" readonly>
+                     <span class="text-[8px] font-black text-slate-500 uppercase italic">Isolation Node</span>
                 </div>
-                <div class="space-y-5">
-                    <select id="energy-type-${id}" onchange="reindexAllSteps()" class="w-full input-glass p-4 rounded-2xl font-bold">
-                        <option value="">-- Energy Source --</option>
+                <div class="space-y-6">
+                    <select id="energy-type-${id}" onchange="reindexAllSteps()" class="input-glass p-4 rounded-2xl font-bold bg-slate-900 border-white/10 appearance-none">
+                        <option value="">-- Choose Energy Source --</option>
                         ${Object.keys(energyConfig).map(k => `<option value="${k}" ${data && data.type === k ? 'selected' : ''}>${k}</option>`).join('')}
                     </select>
                     <div>
-                        <label class="text-[9px] font-black text-slate-500 uppercase mb-2 block">Hazards/Risks</label>
-                        <div class="flex flex-wrap gap-2">${riskOptions.map(r => `<div onclick="toggleChip(${id}, 'rk', '${r}', this)" class="chip ${selRisks.includes(r) ? 'risk-active' : ''}">${r}</div>`).join('')}</div>
-                        <input type="hidden" id="rk-storage-${id}" value="${selRisks.join(',')}">
+                        <label class="text-[9px] font-black text-slate-500 uppercase mb-2 block">Potential Risks</label>
+                        <div class="flex flex-wrap gap-2 overflow-visible">${riskOptions.map(r => `<div onclick="toggleChip(${id},'rk','${r}',this)" class="chip ${selRk.includes(r)?'rk-active':''}">${r}</div>`).join('')}</div>
+                        <input type="hidden" id="rk-storage-${id}" value="${selRk.join(',')}">
                     </div>
                     <div>
-                        <label class="text-[9px] font-black text-slate-500 uppercase mb-2 block">Required Hardware</label>
-                        <div class="flex flex-wrap gap-2">${hardwareOptions.map(h => `<div onclick="toggleChip(${id}, 'hw', '${h}', this)" class="chip ${selHw.includes(h) ? 'hw-active' : ''}">${h}</div>`).join('')}</div>
+                        <label class="text-[9px] font-black text-slate-500 uppercase mb-2 block">LOTO Hardware</label>
+                        <div class="flex flex-wrap gap-2 overflow-visible">${hardwareOptions.map(h => `<div onclick="toggleChip(${id},'hw','${h}',this)" class="chip ${selHw.includes(h)?'hw-active':''}">${h}</div>`).join('')}</div>
                         <input type="hidden" id="hw-storage-${id}" value="${selHw.join(',')}">
                     </div>
-                    <textarea id="isolate-${id}" class="w-full input-glass p-4 rounded-2xl text-sm" placeholder="Isolation Method" rows="2">${data ? data.isolate : ''}</textarea>
-                    <textarea id="verify-${id}" class="w-full input-glass p-4 rounded-2xl text-sm" placeholder="Verification Method" rows="2">${data ? data.verify : ''}</textarea>
-                    <div class="border-2 border-dashed border-white/10 rounded-3xl p-6 text-center cursor-pointer bg-white/5" onclick="document.getElementById('file-${id}').click()">
-                        <p class="text-[10px] font-black uppercase tracking-widest text-slate-500">📸 Photo Reference</p>
-                        <input type="file" id="file-${id}" accept="image/*" capture="environment" onchange="previewFile(this, ${id})" class="hidden">
-                        <div id="preview-box-${id}" class="${data && data.image ? '' : 'hidden'} mt-4"><img id="img-target-${id}" src="${data && data.image ? data.image : ''}" class="w-full h-48 object-cover rounded-2xl"></div>
+                    <textarea id="isolate-${id}" class="input-glass p-4 rounded-2xl text-sm" placeholder="Step-by-Step Isolation Method" rows="2">${data?data.isolate:''}</textarea>
+                    <textarea id="verify-${id}" class="input-glass p-4 rounded-2xl text-sm" placeholder="Verification Method (Zero Energy)" rows="2">${data?data.verify:''}</textarea>
+                    <div class="flex items-center gap-4 pt-2">
+                        <input type="file" id="file-${id}" onchange="previewFile(this, ${id})" class="hidden" accept="image/*">
+                        <button onclick="document.getElementById('file-${id}').click()" class="bg-white/10 text-[10px] font-black px-4 py-3 rounded-xl border border-white/10 w-full hover:bg-white/20">📸 Capture Isolation Point</button>
+                        <div id="preview-${id}" class="${data && data.image ? '' : 'hidden'}"><img src="${data?data.image:''}" id="img-target-${id}" class="h-20 w-20 object-cover rounded-xl border-2 border-red-500"></div>
                     </div>
                 </div>`;
             document.getElementById('points-list').appendChild(card);
@@ -140,158 +133,170 @@
             reindexAllSteps();
         }
 
-        function removePoint(id) { const card = document.getElementById(`step-container-${id}`); if(card) { card.remove(); delete imageDataStore[id]; reindexAllSteps(); } }
-
+        function removePoint(id) { document.getElementById(`step-container-${id}`).remove(); delete imageDataStore[id]; reindexAllSteps(); }
+        
         function reindexAllSteps() {
-            const typeCounts = {};
+            const counts = {};
             document.querySelectorAll('.step-card').forEach(card => {
                 const id = card.dataset.internalId;
                 const type = document.getElementById(`energy-type-${id}`).value;
-                if (type) {
-                    const config = energyConfig[type];
-                    typeCounts[config.code] = (typeCounts[config.code] || 0) + 1;
-                    document.getElementById(`tag-${id}`).value = `${config.code}-${typeCounts[config.code]}`;
-                    card.style.borderLeftColor = `rgb(${config.bg.join(',')})`;
+                if(type) {
+                    const c = energyConfig[type].code;
+                    counts[c] = (counts[c] || 0) + 1;
+                    document.getElementById(`tag-${id}`).value = `${c}-${counts[c]}`;
+                    card.style.borderLeftColor = `rgb(${energyConfig[type].bg.join(',')})`;
                 }
             });
         }
 
         function previewFile(input, id) {
-            const file = input.files[0];
-            if (file) {
-                const reader = new FileReader();
-                reader.onload = (e) => {
-                    imageDataStore[id] = e.target.result;
-                    document.getElementById(`preview-box-${id}`).classList.remove('hidden');
-                    document.getElementById(`img-target-${id}`).src = e.target.result;
-                };
-                reader.readAsDataURL(file);
-            }
+            if (!input.files[0]) return;
+            const reader = new FileReader();
+            reader.onload = (e) => { 
+                imageDataStore[id] = e.target.result; 
+                document.getElementById(`preview-${id}`).classList.remove('hidden');
+                document.getElementById(`img-target-${id}`).src = e.target.result;
+            };
+            reader.readAsDataURL(input.files[0]);
         }
 
         function saveProcedureData() {
             const org = sessionStorage.getItem("loto_org_id");
-            const author = sessionStorage.getItem("loto_user_name");
-            let db = JSON.parse(localStorage.getItem('loto_enterprise_db'));
-            const isFirst = !isEdit || oldHistory.length === 0;
-            let note = isFirst ? "Initial Creation" : prompt("Changes for V" + (oldHistory.length + 1) + ":");
-            if(!isFirst && !note) return;
-
+            let dbFull = JSON.parse(localStorage.getItem('loto_enterprise_db') || '{}');
             const steps = [];
             document.querySelectorAll('.step-card').forEach(card => {
                 const id = card.dataset.internalId;
                 steps.push({ 
-                    type: document.getElementById(`energy-type-${id}`).value, 
+                    type: document.getElementById(`energy-type-${id}`).value,
                     devices: document.getElementById(`hw-storage-${id}`).value.split(',').filter(Boolean),
                     risks: document.getElementById(`rk-storage-${id}`).value.split(',').filter(Boolean),
-                    isolate: document.getElementById(`isolate-${id}`).value, 
-                    verify: document.getElementById(`verify-${id}`).value, 
-                    image: imageDataStore[id] || null 
+                    isolate: document.getElementById(`isolate-${id}`).value,
+                    verify: document.getElementById(`verify-${id}`).value,
+                    image: imageDataStore[id] || null
                 });
             });
-
-            const proc = { id: currentID, author, facility: document.getElementById('facility').value, location: document.getElementById('location').value, date: document.getElementById('revisedDate').value, description: document.getElementById('description').value, steps, history: [...oldHistory, {date: new Date().toLocaleString(), user: author, note}] };
-            db[org].inventory.drafts = db[org].inventory.drafts.filter(d => d.id !== currentID);
-            db[org].inventory.approved = db[org].inventory.approved.filter(a => a.id !== currentID);
-            db[org].inventory.drafts.unshift(proc);
-            localStorage.setItem('loto_enterprise_db', JSON.stringify(db));
+            const proc = { id: currentID, facility: document.getElementById('facility').value, location: document.getElementById('location').value, description: document.getElementById('description').value, steps, date: document.getElementById('revisedDate').value, history: oldHistory, author: sessionStorage.getItem('loto_user_name') };
+            dbFull[org].inventory.drafts = dbFull[org].inventory.drafts.filter(d => d.id !== currentID);
+            dbFull[org].inventory.drafts.unshift(proc);
+            localStorage.setItem('loto_enterprise_db', JSON.stringify(dbFull));
             window.location.href = 'inventory.html';
         }
 
         async function validateAndGenerate() {
             let ok = true;
             document.querySelectorAll('.validate').forEach(el => { if (!el.value.trim()) { el.style.borderColor = "#ef4444"; ok = false; } else { el.style.borderColor = ""; } });
-            if (ok) await generatePDF();
+            if (ok) await generatePDF(false);
         }
 
         async function generatePDF(tagsOnly = false) {
             const { jsPDF } = window.jspdf; const doc = new jsPDF('p', 'mm', 'a4');
             const facility = document.getElementById('facility').value || "N/A";
-            const equip = document.getElementById('description').value || "EQUIPMENT";
-            const loc = document.getElementById('location').value || "LOCATION";
+            const equip = document.getElementById('description').value || "N/A";
+            const loc = document.getElementById('location').value || "N/A";
             const appUrl = window.location.origin + window.location.pathname;
-            const deepLink = `${appUrl}?targetId=${currentID}`;
-            const qrData = new QRious({ value: deepLink, size: 200, level: 'H' }).toDataURL();
+            const qrData = new QRious({ value: `${appUrl}?targetId=${currentID}`, size: 200 }).toDataURL();
 
-            const tableRows = [];
+            const rows = [];
             const masterHardware = {};
             const energyCounts = {};
-            const masterRisks = new Set();
 
             document.querySelectorAll('.step-card').forEach(card => {
                 const id = card.dataset.internalId;
                 const type = document.getElementById(`energy-type-${id}`).value;
-                const devices = document.getElementById(`hw-storage-${id}`).value.split(',').filter(Boolean);
-                const risks = document.getElementById(`rk-storage-${id}`).value.split(',').filter(Boolean);
-                const tag = document.getElementById(`tag-${id}`).value;
-                devices.forEach(d => masterHardware[d] = (masterHardware[d] || 0) + 1);
-                risks.forEach(r => masterRisks.add(r));
+                const hw = document.getElementById(`hw-storage-${id}`).value;
+                const rk = document.getElementById(`rk-storage-${id}`).value;
+                
                 if(type) energyCounts[type] = (energyCounts[type] || 0) + 1;
-                tableRows.push([tag, `RISKS: ${risks.join(', ')}\nDEVICES: ${devices.join(', ')}\n\nMETHOD: ${document.getElementById(`isolate-${id}`).value}`, "", document.getElementById(`verify-${id}`).value, id, type, devices.join(', '), risks.join(', ')]);
+                hw.split(',').forEach(h => { if(h) masterHardware[h] = (masterHardware[h] || 0) + 1; });
+
+                rows.push([
+                    document.getElementById(`tag-${id}`).value,
+                    `RISKS: ${rk.replace(/,/g, ', ')}\nHARDWARE: ${hw.replace(/,/g, ', ')}\n\nMETHOD: ${document.getElementById(`isolate-${id}`).value}`,
+                    "", 
+                    document.getElementById(`verify-${id}`).value,
+                    id, 
+                    type,
+                    hw,
+                    rk
+                ]);
             });
 
             if(!tagsOnly) {
-                doc.setFillColor(15, 23, 42); doc.rect(0, 0, 210, 22, 'F');
-                doc.setTextColor(255, 255, 255); doc.setFontSize(16); doc.text("LOTO POSTED PROCEDURE", 10, 14);
-                doc.setFillColor(248, 250, 252); doc.rect(10, 28, 190, 60, 'FD');
-                doc.setTextColor(30, 41, 59); doc.setFontSize(8);
-                doc.text(`ID: ${currentID} | FACILITY: ${facility}`, 14, 36);
-                doc.text(`EQUIPMENT: ${equip}`, 14, 42);
-                doc.setFont("helvetica", "bold"); doc.text("SECTION 1: RESOURCE SUMMARY", 14, 50);
-                doc.setFont("helvetica", "normal"); 
-                doc.setTextColor(185, 28, 28); doc.text("SOURCES: " + Object.entries(energyCounts).map(([k,v]) => `${v}x ${k}`).join(' | '), 14, 56);
-                doc.setTextColor(245, 158, 11); doc.text("HAZARDS: " + Array.from(masterRisks).join(' • '), 14, 62);
-                doc.setTextColor(30, 41, 59); doc.text("TOOL LIST: " + Object.entries(masterHardware).map(([k,v]) => `${v}x ${k}`).join(' • '), 14, 68);
-                doc.addImage(qrData, 'PNG', 170, 32, 25, 25);
-                doc.autoTable({ startY: 92, head: [['TAG', 'DETAILS', 'VISUAL', 'VERIFY']], body: tableRows.map(r => r.slice(0, 4)), styles: { fontSize: 7, minCellHeight: 40, verticalAlign: 'middle' } });
+                doc.setFillColor(15, 23, 42); doc.rect(0,0,210,25,'F');
+                doc.setTextColor(255); doc.setFontSize(16); doc.text("LOTO POSTED PROCEDURE", 10, 15);
+                doc.addImage(qrData, 'PNG', 170, 5, 25, 25);
+                
+                doc.setTextColor(30,41,59); doc.setFontSize(9);
+                doc.text(`EQUIPMENT: ${equip}`, 10, 32); doc.text(`FACILITY: ${facility} | LOC: ${loc}`, 10, 37);
+                
+                doc.setTextColor(185, 28, 28); doc.text("ENERGY PROFILE: " + Object.entries(energyCounts).map(([k,v]) => `${v}x ${k}`).join(' | '), 10, 44);
+                
+                const hwSummary = Object.entries(masterHardware).map(([k,v]) => `${v}x ${k}`).join('  •  ');
+                doc.setTextColor(30,41,59); doc.setFont("helvetica", "bold"); doc.text("MASTER HARDWARE LIST:", 10, 50);
+                doc.setFont("helvetica", "normal"); doc.text(doc.splitTextToSize(hwSummary || "Standard Padlocks", 180), 10, 54);
+
+                doc.autoTable({
+                    startY: 65, head: [['TAG', 'ISOLATION DETAILS', 'VISUAL', 'VERIFICATION']], 
+                    body: rows.map(r => r.slice(0,4)),
+                    styles: { fontSize: 7, minCellHeight: 40, verticalAlign: 'middle' },
+                    didDrawCell: (d) => {
+                        if(d.column.index === 2 && d.cell.section === 'body') {
+                            const img = imageDataStore[rows[d.row.index][4]];
+                            if(img) doc.addImage(img, 'JPEG', d.cell.x+2, d.cell.y+2, d.cell.width-4, d.cell.height-4);
+                        }
+                    }
+                });
+                
                 doc.addPage();
-                doc.setFillColor(185, 28, 28); doc.rect(0, 0, 210, 15, 'F');
-                doc.setTextColor(255, 255, 255); doc.text("SAFETY SEQUENCES", 105, 10, {align: 'center'});
-                doc.autoTable({ startY: 20, head: [['SHUTDOWN','RESTORATION']], body: [['1. Notify','1. Inspect'],['2. Identify','2. Clear'],['3. Stop','3. Remove'],['4. Isolate','4. Restore'],['5. Lockout','5. Notify']], headStyles: {fillColor: [30, 41, 59]} });
+                doc.setFillColor(185, 28, 28); doc.rect(0,0,210,15,'F');
+                doc.setTextColor(255); doc.setFontSize(12); doc.text("SAFETY SEQUENCES", 105, 10, {align:'center'});
+                doc.autoTable({ startY: 25, head: [['SHUTDOWN PHASE','RESTORATION PHASE']], body: [['1. Notify Personnel','1. Inspect Area'],['2. Energy Identification','2. Personnel Clearance'],['3. Orderly Shutdown','3. Remove Locks/Tags'],['4. Sources Isolation','4. Energy Re-engagement'],['5. Padlock/Tag Application','5. Resume Operation']], headStyles: {fillColor:[30,41,59]} });
                 doc.addPage();
             }
 
-            doc.setTextColor(15, 23, 42); doc.setFontSize(14); doc.text("ISOLATION TAGS", 10, 15);
-            let cx = 15, cy = 25;
-            tableRows.forEach((row) => {
-                const config = energyConfig[row[5]] || {bg:[200,200,200]};
-                doc.setFillColor(255, 255, 255); doc.rect(cx, cy, 60, 45, 'FD');
+            // TAG GENERATION LOGIC - FIXED COLOR & INFO
+            doc.setTextColor(0); doc.setFontSize(14); doc.text("ISOLATION TAGS", 10, 15);
+            let cx = 10, cy = 25;
+            rows.forEach(r => {
+                const config = energyConfig[r[5]] || {bg:[100,100,100]};
+                doc.setDrawColor(0); doc.setFillColor(255); doc.rect(cx, cy, 60, 45, 'FD');
                 doc.setFillColor(...config.bg); doc.rect(cx, cy, 38, 12, 'F');
-                doc.setTextColor(255, 255, 255); doc.setFontSize(14); doc.text(row[0], cx + 4, cy + 9);
-                doc.setTextColor(0); doc.setFontSize(row[5].length > 10 ? 5 : 7); doc.setFont("helvetica", "bold");
-                doc.text(row[5].toUpperCase(), cx + 40, cy + 8);
-                doc.setFont("helvetica", "normal"); doc.setFontSize(6);
-                doc.text(`FAC: ${facility.substring(0,20)}`, cx+2, cy+18);
-                doc.text(`EQ: ${equip.substring(0,20)}`, cx+2, cy+22);
-                doc.text(`RISK: ${row[7].substring(0,20)}`, cx+2, cy+26);
-                doc.setFont("helvetica", "bold"); doc.text("DEVICES:", cx+2, cy+32);
-                doc.setFont("helvetica", "normal"); doc.text(doc.splitTextToSize(row[6], 35), cx+2, cy+35);
-                doc.addImage(qrData, 'PNG', cx + 40, cy + 22, 18, 18);
-                cx += 65; if (cx > 160) { cx = 15; cy += 52; }
-                if (cy > 230) { doc.addPage(); cx = 15; cy = 25; }
+                doc.setTextColor(255); doc.setFontSize(14); doc.text(r[0], cx+4, cy+9);
+                doc.setTextColor(0); doc.setFontSize(6);
+                doc.text(`FACILITY: ${facility.substring(0,25)}`, cx+2, cy+18);
+                doc.text(`LOC: ${loc.substring(0,25)}`, cx+2, cy+22);
+                doc.text(`EQ: ${equip.substring(0,25)}`, cx+2, cy+26);
+                doc.setFont("helvetica", "bold"); doc.text("HARDWARE:", cx+2, cy+28);
+                doc.setFont("helvetica", "normal"); doc.text(doc.splitTextToSize(r[6].replace(/,/g, ', '), 35), cx+2, cy+31);
+                doc.addImage(qrData, 'PNG', cx+41, cy+22, 18, 18);
+                cx += 65; if(cx > 150) { cx = 10; cy += 50; }
+                if(cy > 230) { doc.addPage(); cx = 10; cy = 25; }
             });
-            doc.save(`${currentID}_FINAL.pdf`);
+            doc.save(`${currentID}_LOTO_FINAL.pdf`);
         }
 
         window.onload = () => {
-            const params = new URLSearchParams(window.location.search);
-            const rId = params.get('targetId') || sessionStorage.getItem('recall_id');
-            const rTab = params.get('targetId') ? 'approved' : sessionStorage.getItem('recall_tab');
+            const rId = sessionStorage.getItem('recall_id');
+            const rTab = sessionStorage.getItem('recall_tab');
             const org = sessionStorage.getItem("loto_org_id");
-            if (rId && org) {
-                const db = JSON.parse(localStorage.getItem('loto_enterprise_db') || '{}');
-                const data = db[org].inventory[rTab].find(p => p.id === rId);
-                if (data) {
-                    isEdit = true; document.getElementById('versionBadge').classList.remove('hidden');
+            if(rId && org) {
+                const dbFull = JSON.parse(localStorage.getItem('loto_enterprise_db') || '{}');
+                const data = dbFull[org].inventory[rTab].find(p => p.id === rId);
+                if(data) {
                     document.getElementById('facility').value = data.facility || "";
                     document.getElementById('location').value = data.location || "";
-                    document.getElementById('revisedDate').value = data.date || "";
                     document.getElementById('description').value = data.description || "";
+                    document.getElementById('revisedDate').value = data.date || "";
                     oldHistory = data.history || [];
                     data.steps.forEach(s => addNewPoint(s));
                     updateID();
-                    const autoFull = sessionStorage.getItem('auto_print_full');
-                    if(autoFull === 'true') { setTimeout(async () => { await generatePDF(); sessionStorage.removeItem('auto_print_full'); window.location.href='inventory.html'; }, 800); }
+                    if(sessionStorage.getItem('auto_print_full') || sessionStorage.getItem('auto_print_tags')) {
+                        setTimeout(async () => {
+                            await generatePDF(sessionStorage.getItem('auto_print_tags') === 'true');
+                            sessionStorage.removeItem('auto_print_full'); sessionStorage.removeItem('auto_print_tags');
+                            window.location.href = 'inventory.html';
+                        }, 1200);
+                    }
                 }
             } else { updateID(); addNewPoint(); }
         };
